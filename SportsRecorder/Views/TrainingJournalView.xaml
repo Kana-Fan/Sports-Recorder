@@ -4,16 +4,90 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SportsRecorder.Views"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="White">
+             d:DesignHeight="500" d:DesignWidth="800">
+    <UserControl.DataContext>
+        <vm:TrainingJournalViewModel/>
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <!-- 移除 Row Header -->
+        <Style TargetType="DataGridRowHeader">
+            <Setter Property="Width" Value="0"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+        <!-- 有氧表格 -->
+        <DataTemplate x:Key="CardioTemplate">
+            <DataGrid ItemsSource="{Binding Cardios}"
+                      Style="{StaticResource ModernDataGrid}"
+                      ColumnHeaderStyle="{StaticResource ModernHeader}"
+                      CellStyle="{StaticResource ModernCell}"
+                      CanUserAddRows="False"
+                      RowHeaderWidth="0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="距離(km)" Width="120" Binding="{Binding DistanceKm, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="次數" Width="100" Binding="{Binding Times, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="時間(min)" Width="120" Binding="{Binding DurationMin, Mode=TwoWay}"/>
+                    <DataGridTemplateColumn Header="操作" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="刪除"
+                                    Command="{Binding DataContext.DeleteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}"
+                                    Style="{StaticResource PrimaryButton}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DataTemplate>
+
+        <!-- 重訓表格，結構同上但欄位不同 -->
+        <DataTemplate x:Key="StrengthTemplate">
+            <DataGrid ItemsSource="{Binding Strengths}"
+                      Style="{StaticResource ModernDataGrid}"
+                      ColumnHeaderStyle="{StaticResource ModernHeader}"
+                      CellStyle="{StaticResource ModernCell}"
+                      CanUserAddRows="False">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="部位" Width="50" Binding="{Binding BodyPart, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="重量(kg)" Width="120" Binding="{Binding WeightKg, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="組數" Width="100" Binding="{Binding Sets, Mode=TwoWay}"/>
+                    <DataGridTextColumn Header="次數" Width="100" Binding="{Binding Reps, Mode=TwoWay}"/>
+                    <DataGridTemplateColumn Header="操作" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="刪除"
+                                        Command="{Binding DataContext.DeleteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"
+                                        Style="{StaticResource PrimaryButton}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Background="#1A1D27">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="訓練日誌" Style="{StaticResource Title}"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Image Source="/Assets/Icons/contract_edit.png"
+            Width="25" Height="25"
+            Margin="5"
+            VerticalAlignment="Center"
+            RenderOptions.BitmapScalingMode="HighQuality"/>
+            <TextBlock Text="訓練日誌" Style="{StaticResource Title}" />
+        </StackPanel>
 
         <Grid Grid.Row="1">
             <Grid.RowDefinitions>
@@ -28,13 +102,71 @@
             </Grid.ColumnDefinitions>
 
             <TextBlock Grid.Row="0" Grid.Column="0" Text="日期" Style="{StaticResource Subheading}"/>
-            <TextBlock Grid.Row="0" Grid.Column="1" Text="類型" Style="{StaticResource Subheading}"/>
-            <TextBlock Grid.Row="0" Grid.Column="2" Text="總持續時間(min)" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="0" Grid.Column="1" Text="運動類型" Style="{StaticResource Subheading}"/>
 
-            <DatePicker Grid.Row="1" Grid.Column="0" Style="{StaticResource CustomDatePicker}" />
-            <ComboBox Grid.Row="1" Grid.Column="1" Style="{StaticResource DarkComboBoxStyle}" SelectionChanged="ComboBox_SelectionChanged" />
-            <TextBox Grid.Row="1" Grid.Column="2" Style="{StaticResource Contents}"/>
+            <!-- 只有有氧時才顯示 -->
+            <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
+                <StackPanel.Style>
+                    <Style TargetType="StackPanel">
+                        <!-- 預設隱藏 -->
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCardio}" Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Style>
+
+                <TextBlock Text="總持續時間(min)" Style="{StaticResource Subheading}"/>
+
+                <TextBlock Text="{Binding CardiosTotalDuration}" Style="{StaticResource Subheading}" FontSize="25"  />
+            </StackPanel>
+
+            <DatePicker Grid.Row="1" Grid.Column="0" SelectedDate="{Binding SelectedDate, Mode=TwoWay}" Style="{StaticResource CustomDatePicker}"/>
+
+            <ComboBox Grid.Row="1" Grid.Column="1"
+                      ItemsSource="{Binding ExerciseTypeOptions}"
+                      SelectedValue="{Binding SelectedType, Mode=TwoWay}"
+                      SelectedValuePath="Value"
+                      DisplayMemberPath="DisplayName"
+                      Style="{StaticResource DarkComboBoxStyle}"/>
         </Grid>
-        <TextBox HorizontalAlignment="Left" Margin="1018,196,0,0" Grid.Row="2" TextWrapping="Wrap" Text="TextBox" VerticalAlignment="Top" Width="120"/>
+
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="運動項目" Style="{StaticResource Subheading}" Margin="10,10,10,10"/>
+
+            <!-- 依類型切換表格 -->
+            <ContentControl Grid.Row="1" Content="{Binding CurrentLog}" Margin="0,0,0,17">
+                <ContentControl.Style>
+                    <Style TargetType="ContentControl">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsCardio}" Value="True">
+                                <Setter Property="ContentTemplate" Value="{StaticResource CardioTemplate}"/>
+                            </DataTrigger>
+
+                            <DataTrigger Binding="{Binding IsStrength}" Value="True">
+                                <Setter Property="ContentTemplate" Value="{StaticResource StrengthTemplate}"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ContentControl.Style>
+            </ContentControl>
+
+            <!-- 底部按鈕列 -->
+            <Grid  Grid.Row="2" Margin="10">
+                <Button Content="儲存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
+                <Button Content="+" Command="{Binding AddEntryCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"/>
+            </Grid>
+        </Grid>
     </Grid>
 </UserControl>

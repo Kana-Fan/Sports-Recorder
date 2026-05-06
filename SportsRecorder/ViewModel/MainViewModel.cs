@@ -46,22 +46,22 @@ namespace SportsRecorder.ViewModel
 
         private ObservableCollection<NavigationItem> BuildNavItems() => new()
         {
-        new() { Title = "訓練日誌", Key = "journal" },
-        new() { Title = "運動類型", Key = "exercise", Children = new()
-        {
-            new() { Title = "有氧", Key = "cardio" },
-            new() { Title = "重訓", Key = "strength" },
-        }},
-        new() { Title = "統計分析", Key = "stats", Children = new()
-        {
-            new() { Title = "有氧", Key = "stats-cardio" },
-            new() { Title = "重訓", Key = "stats-strength" },
-        }},
-        new() { Title = "資料管理", Key = "data", Children = new()
-        {
-            new() { Title = "匯出", Key = "export" },
-            new() { Title = "匯入", Key = "import" },
-        }},
+            new() { Title = "訓練日誌", Key = "journal", IconPath = "/Assets/Icons/contract_edit.png"},
+            new() { Title = "運動類型", Key = "exercise", IconPath = "/Assets/Icons/database.png", Children = new()
+            {
+                new() { Title = "有氧", Key = "cardio", IconPath = "/Assets/Icons/vo2_max.png" },
+                new() { Title = "重訓", Key = "strength", IconPath = "/Assets/Icons/fitness.png" },
+            }},
+            new() { Title = "統計分析", Key = "stats", IconPath = "/Assets/Icons/bar_chart.png", Children = new()
+            {
+                new() { Title = "有氧", Key = "stats-cardio", IconPath = "/Assets/Icons/vo2_max.png" },
+                new() { Title = "重訓", Key = "stats-strength", IconPath = "/Assets/Icons/fitness.png" },
+            }},
+            new() { Title = "資料管理", Key = "data", IconPath = "/Assets/Icons/folder.png", Children = new()
+            {
+                new() { Title = "匯出", Key = "export", IconPath = "/Assets/Icons/download.png" },
+                new() { Title = "匯入", Key = "import", IconPath = "/Assets/Icons/upload.png" },
+            }},
         };
 
         // 切換內容

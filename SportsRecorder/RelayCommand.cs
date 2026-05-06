@@ -18,6 +18,12 @@ namespace SportsRecorder
             _canExecute = canExecute;
         }
 
+        public RelayCommand(Action execute, Func<bool> canExecute = null)
+        {
+            _execute = _ => execute();
+            _canExecute = canExecute == null ? null : _ => canExecute();
+        }
+
         public event EventHandler CanExecuteChanged
         {
             add => CommandManager.RequerySuggested += value;

@@ -8,7 +8,9 @@
         xmlns:m="clr-namespace:SportsRecorder.Model"
         xmlns:views="clr-namespace:SportsRecorder.Views"
         mc:Ignorable="d"
-        Title="Sports Recorder" Height="450" Width="800">
+        Title="Sports Recorder"
+        Height="500" Width="800"
+        MinHeight="500" MinWidth="800">
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
@@ -16,18 +18,128 @@
     <Window.Resources>
         <!-- TreeView 樣式：移除邊距與邊框-->
         <Style TargetType="TreeView">
-            <Setter Property="Background" Value="#FF202020" />
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#1A1D27" />
+            <Setter Property="Padding" Value="0,8,0,8"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            <Setter Property="BorderBrush" Value="Black"/>
         </Style>
 
         <!-- TreeViewItem 樣式 -->
         <Style TargetType="TreeViewItem">
-            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontFamily" Value="DFKai-SB"/>
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="Margin" Value="5"/>
-            <Setter Property="Padding" Value="5"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#FFA1A7CC"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="IsExpanded" Value="True"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TreeViewItem">
+                        <StackPanel>
+                            <!-- 節點列 -->
+                            <Grid x:Name="ItemRow" MinHeight="40" Cursor="Hand">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="3"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- 左側指示條 -->
+                                <Rectangle x:Name="SelectionBar"
+                                           Grid.Column="0"
+                                           Fill="#6C63FF"
+                                           RadiusX="2" RadiusY="2"
+                                           Opacity="0"/>
+
+                                <!-- 懸停/選取背景 -->
+                                <Border x:Name="HoverBg"
+                                        Grid.Column="0"
+                                        Grid.ColumnSpan="2"
+                                        Background="Transparent"
+                                        CornerRadius="0,6,6,0"
+                                        Margin="0,2,8,2"/>
+
+                                <!-- 內容：縮排 + 箭頭 + 文字 -->
+                                <StackPanel Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                    <!-- 展開箭頭 -->
+                                    <TextBlock x:Name="ExpandArrow"
+                                               Text="›"
+                                               FontSize="18"
+                                               FontFamily="Segoe UI"
+                                               Foreground="#FF7E83A7"
+                                               VerticalAlignment="Center"
+                                               Width="18"
+                                               TextAlignment="Center"
+                                               RenderTransformOrigin="0.5,0.5">
+                                        <TextBlock.RenderTransform>
+                                            <RotateTransform x:Name="ArrowRotate" Angle="0"/>
+                                        </TextBlock.RenderTransform>
+                                    </TextBlock>
+
+                                    <!-- Header 內容 -->
+                                    <ContentPresenter x:Name="PART_Header"
+                                                      ContentSource="Header"
+                                                      VerticalAlignment="Center"
+                                                      Margin="4,0,0,0"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- 子項目 -->
+                            <ItemsPresenter x:Name="ItemsHost" Margin="20,0,0,0" Visibility="Collapsed"/>
+                        </StackPanel>
+
+                        <ControlTemplate.Triggers>
+                            <!-- 沒有子項目時隱藏箭頭 -->
+                            <Trigger Property="HasItems" Value="False">
+                                <Setter TargetName="ExpandArrow" Property="Visibility" Value="Hidden"/>
+                            </Trigger>
+
+                            <!-- 確保子項目可以收合 -->
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Setter TargetName="ItemsHost" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+
+                            <!-- 展開動畫 -->
+                            <Trigger Property="IsExpanded" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ArrowRotate"
+                                                             Storyboard.TargetProperty="Angle"
+                                                             To="90" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="ArrowRotate"
+                                                             Storyboard.TargetProperty="Angle"
+                                                             To="0" Duration="0:0:0.15"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+
+                            <!-- 懸停 -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HoverBg" Property="Background" Value="#22253A"/>
+                                <Setter TargetName="SelectionBar" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+
+                            <!-- 選取 -->
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="HoverBg" Property="Background" Value="#252836"/>
+                                <Setter TargetName="SelectionBar" Property="Opacity" Value="1"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <DataTemplate DataType="{x:Type vm:TrainingJournalViewModel}">
@@ -43,7 +155,7 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="150" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
@@ -54,13 +166,20 @@
                 <TreeView.ItemTemplate>
                     <HierarchicalDataTemplate DataType="{x:Type m:NavigationItem}"
                                               ItemsSource="{Binding Children}">
-                        <TextBlock Text="{Binding Title}" Padding="4,2" />
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{Binding IconPath}"
+                                    Width="15" Height="15"
+                                    Margin="0,0,5,0"
+                                    VerticalAlignment="Center"
+                                    RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <TextBlock Text="{Binding Title}" Padding="4,2"/>
+                        </StackPanel>
                     </HierarchicalDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
         </Border>
 
         <!-- 右側內容頁 -->
-        <ContentControl Grid.Column="1" Content="{Binding CurrentPage}"/>
+        <ContentControl Grid.Column="1" Background="#1A1D27" Content="{Binding CurrentPage}"/>
     </Grid>
 </Window>
