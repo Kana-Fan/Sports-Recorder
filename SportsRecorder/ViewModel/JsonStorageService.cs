@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,9 +36,9 @@ namespace SportsRecorder.ViewModel
             return dataFolder;
         }
 
-        /// <summary>儲存資料</summary>
+        /// <summary>儲存資料，失敗回傳 false</summary>
         /// <example>JsonStorageService.Save(Records, "training.json");</example>
-        public static void Save(ObservableCollection<TrainingJournalItem> data, string fileName)
+        public static bool Save<T>(T data, string fileName)
         {
             try
             {
@@ -45,17 +46,21 @@ namespace SportsRecorder.ViewModel
                 string fullPath = Path.Combine(folder, fileName);
 
                 string json = JsonSerializer.Serialize(data, _options);
-                File.WriteAllText(fullPath, json, Encoding.UTF8);
+
+                File.WriteAllText(fullPath, json);
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Save error: {ex.Message}");
+                Debug.WriteLine($"Save error: {ex.Message}");
+                return false;
             }
         }
 
         /// <summary>讀取資料（檔案不存在回傳空</summary>
-        /// <example>Records = JsonStorageService.Load("training.json");</example>
-        public static ObservableCollection<TrainingJournalItem> Load(string fileName)
+        /// <example>Records = JsonStorageService.Load<T<T>>("training.json");</example>
+        public static T Load<T>(string fileName)
+        where T : new() // 保證 T 有無參數建構子
         {
             try
             {
@@ -64,19 +69,18 @@ namespace SportsRecorder.ViewModel
 
                 if (!File.Exists(fullPath))
                 {
-                    return new ObservableCollection<TrainingJournalItem>();
+                    return new T();
                 }
 
-                string json = File.ReadAllText(fullPath, Encoding.UTF8);
+                string json = File.ReadAllText(fullPath);
 
-                var data = JsonSerializer.Deserialize<ObservableCollection<TrainingJournalItem>>(json, _options);
-
-                return data ?? new ObservableCollection<TrainingJournalItem>();
+                return JsonSerializer.Deserialize<T>(json, _options)
+                       ?? new T();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Load error: {ex.Message}");
-                return new ObservableCollection<TrainingJournalItem>();
+                Debug.WriteLine($"[Load] 讀取失敗: {ex.Message}");
+                return new T();
             }
         }
     }

@@ -4,9 +4,61 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SportsRecorder.Views"
+             xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-        <TextBlock Grid.Row="0" Text="重量訓練"/>
+    <UserControl.DataContext>
+        <vm:StrengthViewModel/>
+    </UserControl.DataContext>
+
+    <Grid Background="#1A1D27">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Image Source="/Assets/Icons/database.png"
+                   Width="25" Height="25"
+                   Margin="5"
+                   VerticalAlignment="Center"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+            <TextBlock Text="運動類型 - 重量訓練" Style="{StaticResource Title}" />
+            <Image Source="/Assets/Icons/fitness.png"
+                   Width="25" Height="25"
+                   Margin="5"
+                   VerticalAlignment="Center"
+                   RenderOptions.BitmapScalingMode="HighQuality"/>
+        </StackPanel>
+
+        <DataGrid Grid.Row="1"
+                  ItemsSource="{Binding FilteredItems}"
+                  Style="{StaticResource ModernDataGrid}"
+                  ColumnHeaderStyle="{StaticResource ModernHeader}"
+                  CellStyle="{StaticResource ModernCell}"
+                  CanUserAddRows="False"
+                  RowHeaderWidth="0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="部位" Width="*" Binding="{Binding BodyPart, Mode=TwoWay}"/>
+                <DataGridTextColumn Header="訓練名稱" Width="3*" Binding="{Binding Name, Mode=TwoWay}"/>
+                <DataGridTemplateColumn Header="操作" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="刪除"
+                                Command="{Binding DataContext.DeleteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                CommandParameter="{Binding}"
+                                Style="{StaticResource PrimaryButton}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Grid  Grid.Row="2" Margin="10">
+            <Button Content="儲存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
+            <TextBox Width="150" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource SearchTextBox}" HorizontalAlignment="Center"/>
+            <Button Content="+" Command="{Binding AddEntryCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"/>
+        </Grid>
     </Grid>
 </UserControl>

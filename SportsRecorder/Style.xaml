@@ -8,7 +8,7 @@
 
     <Style x:Key="Title" TargetType="TextBlock" BasedOn="{StaticResource Txt}">
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontSize" Value="25" />
     </Style>
 
     <Style x:Key="Subheading" TargetType="TextBlock" BasedOn="{StaticResource Txt}">
@@ -18,15 +18,70 @@
     <Style x:Key="Contents" TargetType="TextBox">
         <Setter Property="FontFamily" Value="DFKai-SB"/>
         <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="#FF484E67"/>
         <Setter Property="Margin" Value="10" />
         <Setter Property="FontSize" Value="25" />
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#FF484E67"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="SearchTextBox" TargetType="TextBox">
+        <Setter Property="Width" Value="150"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontFamily" Value="DFKai-SB"/>
+        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="CaretBrush" Value="#FF484E67"/>
+        <Setter Property="Template" >
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TextBoxBase}">
+                    <Grid>
+                        <Border x:Name="border"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="auto"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+
+                                <Image Grid.Column="0"
+                                       Source="/Assets/Icons/search.png"
+                                       Width="25" Height="25"
+                                       Margin="5"
+                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <ScrollViewer Grid.Column="1"
+                                              x:Name="PART_ContentHost"
+                                              HorizontalAlignment="Left"
+                                              VerticalAlignment="Center"
+                                              Width="100"
+                                              Margin="10 0 0 0"
+                                              Focusable="False"
+                                              HorizontalScrollBarVisibility="Hidden"
+                                              VerticalScrollBarVisibility="Hidden"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!-- 日期選擇 -->
     <Style x:Key="CustomDatePicker" TargetType="DatePicker">
         <Setter Property="Foreground" Value="#FFA1A7CC"/>
         <Setter Property="FontFamily" Value="DFKai-SB"/>
-        <Setter Property="FontSize" Value="25"/>
+        <Setter Property="FontSize" Value="20"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="10"/>
@@ -212,7 +267,6 @@
                                     Property="Opacity"
                                     Value="0.5"/>
                         </Trigger>
-
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -220,19 +274,15 @@
     </Style>
 
     <!--ComboBox-->
-    <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox">
+    <Style x:Key="DarkComboBoxStyleBase" TargetType="ComboBox">
         <Setter Property="Background" Value="#1A1D27"/>
         <Setter Property="Foreground" Value="#A1A7CC"/>
         <Setter Property="BorderBrush" Value="#1A1D27"/>
         <Setter Property="FontFamily" Value="DFKai-SB"/>
-        <Setter Property="FontSize" Value="25"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="6,4"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Margin" Value="10"/>
-        <Setter Property="Width" Value="150"/>
-        <Setter Property="Height" Value="35"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
@@ -323,4 +373,10 @@
         </Setter>
     </Style>
 
+    <Style x:Key="DarkComboBoxStyle" TargetType="ComboBox" BasedOn="{StaticResource DarkComboBoxStyleBase}">
+        <Setter Property="Margin" Value="10"/>
+        <Setter Property="Width" Value="150"/>
+        <Setter Property="Height" Value="35"/>
+        <Setter Property="FontSize" Value="20"/>
+    </Style>
 </ResourceDictionary>

@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:SportsRecorder.Views"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
+             xmlns:s="clr-namespace:SportsRecorder"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="800">
     <UserControl.DataContext>
@@ -13,6 +14,7 @@
     </UserControl.DataContext>
 
     <UserControl.Resources>
+        <s:BodyPartToNamesConverter x:Key="BodyPartToNamesConverter"/>
         <!-- 移除 Row Header -->
         <Style TargetType="DataGridRowHeader">
             <Setter Property="Width" Value="0"/>
@@ -27,10 +29,25 @@
                       CanUserAddRows="False"
                       RowHeaderWidth="0">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="距離(km)" Width="120" Binding="{Binding DistanceKm, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="次數" Width="100" Binding="{Binding Times, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="時間(min)" Width="120" Binding="{Binding DurationMin, Mode=TwoWay}"/>
+                    <DataGridTemplateColumn Header="運動" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <!-- 非編輯狀態：顯示文字 -->
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <!-- 編輯狀態：顯示 ComboBox -->
+                            <DataTemplate>
+                                <ComboBox SelectedItem="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          ItemsSource="{Binding DataContext.CardioTypes, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          Style="{StaticResource DarkComboBoxStyleBase}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <s:DataGridNumericColumn Header="距離(km)" Width="120" Binding="{Binding DistanceKm, Mode=TwoWay}" AllowDecimal="True"/>
+                    <s:DataGridNumericColumn Header="次數" Width="100" Binding="{Binding Times, Mode=TwoWay}"/>
+                    <s:DataGridNumericColumn Header="時間(min)" Width="120" Binding="{Binding DurationMin, Mode=TwoWay}"/>
                     <DataGridTemplateColumn Header="操作" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -53,11 +70,49 @@
                       CellStyle="{StaticResource ModernCell}"
                       CanUserAddRows="False">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="部位" Width="50" Binding="{Binding BodyPart, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="重量(kg)" Width="120" Binding="{Binding WeightKg, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="組數" Width="100" Binding="{Binding Sets, Mode=TwoWay}"/>
-                    <DataGridTextColumn Header="次數" Width="100" Binding="{Binding Reps, Mode=TwoWay}"/>
+                    <!-- 部位欄位 -->
+                    <DataGridTemplateColumn Header="部位" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <!--非編輯狀態：顯示文字-->
+                            <DataTemplate>
+                                <TextBlock Text="{Binding BodyPart}" VerticalAlignment="Center" Margin="4,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <!--編輯狀態：顯示 ComboBox-->
+                            <DataTemplate>
+                                <ComboBox SelectedItem="{Binding BodyPart, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          ItemsSource="{Binding DataContext.BodyTypes, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                          Style="{StaticResource DarkComboBoxStyleBase}"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <!--運動名稱-->
+                    <DataGridTemplateColumn Header="運動" Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <!--非編輯狀態：顯示文字-->
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4,0"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                        <DataGridTemplateColumn.CellEditingTemplate>
+                            <!--編輯狀態：顯示 ComboBox-->
+                            <DataTemplate>
+                                <ComboBox SelectedItem="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkComboBoxStyleBase}">
+                                    <ComboBox.ItemsSource>
+                                        <MultiBinding Converter="{StaticResource BodyPartToNamesConverter}">
+                                            <Binding Path="BodyPart"/>
+                                            <Binding Path="DataContext.StrengthTypes"
+                                                    RelativeSource="{RelativeSource AncestorType=UserControl}"/>
+                                        </MultiBinding>
+                                    </ComboBox.ItemsSource>
+                                </ComboBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellEditingTemplate>
+                    </DataGridTemplateColumn>
+                    <s:DataGridNumericColumn Header="重量(kg)" Width="120" Binding="{Binding WeightKg, Mode=TwoWay}" AllowDecimal="True"/>
+                    <s:DataGridNumericColumn Header="組數" Width="100" Binding="{Binding Sets, Mode=TwoWay}"/>
+                    <s:DataGridNumericColumn Header="次數" Width="100" Binding="{Binding Reps, Mode=TwoWay}"/>
                     <DataGridTemplateColumn Header="操作" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -77,7 +132,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
@@ -120,7 +175,7 @@
 
                 <TextBlock Text="總持續時間(min)" Style="{StaticResource Subheading}"/>
 
-                <TextBlock Text="{Binding CardiosTotalDuration}" Style="{StaticResource Subheading}" FontSize="25"  />
+                <TextBlock Text="{Binding CardiosTotalDuration}" Style="{StaticResource Subheading}" FontSize="25"/>
             </StackPanel>
 
             <DatePicker Grid.Row="1" Grid.Column="0" SelectedDate="{Binding SelectedDate, Mode=TwoWay}" Style="{StaticResource CustomDatePicker}"/>

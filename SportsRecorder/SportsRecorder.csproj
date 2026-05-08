@@ -15,6 +15,7 @@
     <None Remove="Assets\Icons\download.png" />
     <None Remove="Assets\Icons\fitness.png" />
     <None Remove="Assets\Icons\folder.png" />
+    <None Remove="Assets\Icons\search.png" />
     <None Remove="Assets\Icons\upload.png" />
     <None Remove="Assets\Icons\vo2_max.png" />
   </ItemGroup>
@@ -31,6 +32,7 @@
     <Resource Include="Assets\Icons\download.png" />
     <Resource Include="Assets\Icons\fitness.png" />
     <Resource Include="Assets\Icons\folder.png" />
+    <Resource Include="Assets\Icons\search.png" />
     <Resource Include="Assets\Icons\upload.png" />
     <Resource Include="Assets\Icons\vo2_max.png" />
   </ItemGroup>
