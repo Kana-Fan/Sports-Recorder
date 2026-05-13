@@ -32,9 +32,9 @@ namespace SportsRecorder.Model
     public class Cardio : ExerciseEntryBase
     {
         public string Name { get; set; } // 運動名稱
-        public double DistanceKm { get; set; } = 0 ; // 運動距離 可為0
-        public int Times { get; set; } = 0; // 運動次數 可為0
-        public int DurationMin { get; set; } // 運動時間
+        public double DistanceKm { get; set; } = 0; // 運動距離
+        public int Times { get; set; } = 1; // 運動次數
+        public int DurationMin { get; set; } = 10; // 運動時間
     }
 
     // 重量訓練的一筆資料
@@ -42,8 +42,8 @@ namespace SportsRecorder.Model
     {
         public string BodyPart { get; set; } // 訓練部位
         public string Name { get; set; } // 訓練名稱
-        public double WeightKg { get; set; } = 0; // 重量
-        public int Sets { get; set; } = 0; // 組數
-        public int Reps { get; set; } = 0; // 運動次數 可為0
+        public double WeightKg { get; set; } = 1; // 重量
+        public int Sets { get; set; } = 1; // 組數
+        public int Reps { get; set; } = 1; // 運動次數
     }
 }

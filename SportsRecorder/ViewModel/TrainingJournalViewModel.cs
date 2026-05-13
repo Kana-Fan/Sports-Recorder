@@ -111,14 +111,13 @@ namespace SportsRecorder.ViewModel
                 if (SelectedType == ExerciseType.Cardio)
                 {
                     CurrentLog.Cardios.Add(new Cardio());
+                    RecalculateTotalDuration();
                 }
 
                 else
                 {
                     CurrentLog.Strengths.Add(new Strength());
                 }
-
-                RecalculateTotalDuration();
             });
 
             DeleteEntryCommand = new RelayCommand<ExerciseEntryBase>(entry =>
@@ -133,6 +132,7 @@ namespace SportsRecorder.ViewModel
                     if (entry is Cardio c)
                     {
                         CurrentLog.Cardios.Remove(c);
+                        RecalculateTotalDuration();
                     }
 
                     else if (entry is Strength s)
@@ -142,7 +142,6 @@ namespace SportsRecorder.ViewModel
 
                     if (JsonStorageService.Save(Records, FileName))
                     {
-                        RecalculateTotalDuration();
                         _dialogService.ShowMessage("儲存成功！");
                     }
 
@@ -161,9 +160,10 @@ namespace SportsRecorder.ViewModel
                     .Where(x => (x.Cardios != null && x.Cardios.Count > 0) || (x.Strengths != null && x.Strengths.Count > 0))
                     .OrderBy(x => x.Date));
 
+                RecalculateTotalDuration();
+
                 if (JsonStorageService.Save(Records, FileName))
                 {
-                    RecalculateTotalDuration();
                     _dialogService.ShowMessage("儲存成功！");
                 }
 

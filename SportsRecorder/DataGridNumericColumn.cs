@@ -21,6 +21,8 @@ namespace SportsRecorder
         /// </summary>
         public bool AllowDecimal { get; set; } = false;
 
+        private readonly IDialogService _dialogService = new DialogService();
+
         protected override object PrepareCellForEdit(FrameworkElement editingElement, RoutedEventArgs editingEventArgs)
         {
             if (editingElement is TextBox edit)
@@ -92,7 +94,36 @@ namespace SportsRecorder
             // 依 AllowDecimal 決定使用小數或整數的驗證規則
             string pattern = AllowDecimal ? @"^\d*\.?\d*$" : @"^\d+$";
 
-            return Regex.IsMatch(text, pattern);
+            if (!Regex.IsMatch(text, pattern))
+            {
+                return false;
+            }
+
+            // 嘗試解析數值，驗證是否大於 0
+            if (decimal.TryParse(text, out decimal value))
+            {
+                return value > 0;
+            }
+
+            // 無法解析代表仍在輸入中間狀態，暫時放行
+            return true;
+        }
+
+        protected override bool CommitCellEdit(FrameworkElement editingElement)
+        {
+            if (editingElement is TextBox edit)
+            {
+                // 空字串或無法解析為數字時，拒絕提交並提示使用者
+                if (string.IsNullOrEmpty(edit.Text) || !decimal.TryParse(edit.Text, out decimal value) || value <= 0)
+                {
+                    // 顯示提示
+                    _dialogService.ShowMessage("請輸入大於 0 的數字", "輸入錯誤");
+                    // 讓游標停在該欄位，不離開
+                    edit.Focus();
+                    return false;
+                }
+            }
+            return base.CommitCellEdit(editingElement);
         }
     }
 }

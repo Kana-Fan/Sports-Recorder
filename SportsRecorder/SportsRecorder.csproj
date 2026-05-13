@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.2" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
   </ItemGroup>
 
@@ -35,6 +36,14 @@
     <Resource Include="Assets\Icons\search.png" />
     <Resource Include="Assets\Icons\upload.png" />
     <Resource Include="Assets\Icons\vo2_max.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\Jackson.YH.Fan\source\repos\WPF\SportsRecorder\SportsRecorder\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="C:\Users\Jackson.YH.Fan\source\repos\WPF\SportsRecorder\SportsRecorder\.editorconfig" />
   </ItemGroup>
 
 </Project>

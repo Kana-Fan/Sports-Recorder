@@ -72,6 +72,7 @@ namespace SportsRecorder.ViewModel
                 "journal" => new TrainingJournalViewModel(),
                 "cardio" => new CardioViewModel(),
                 "strength" => new StrengthViewModel(),
+                "stats-cardio" => new StatsCardioViewModel(),
                 _ => CurrentPage
             };
         }

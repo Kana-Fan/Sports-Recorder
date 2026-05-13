@@ -9,8 +9,8 @@
         xmlns:views="clr-namespace:SportsRecorder.Views"
         mc:Ignorable="d"
         Title="Sports Recorder"
-        Height="500" Width="1000"
-        MinHeight="500" MinWidth="1000">
+        Height="800" Width="1000"
+        MinHeight="800" MinWidth="1000">
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
@@ -150,6 +150,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:StrengthViewModel}">
             <views:StrengthView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StatsCardioViewModel}">
+            <views:StatsCardioView />
         </DataTemplate>
     </Window.Resources>
 
