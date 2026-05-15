@@ -1,4 +1,8 @@
-﻿using LiveChartsCore.Defaults;
+﻿using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 using SportsRecorder.Model;
 using System;
 using System.Collections.Generic;
@@ -16,8 +20,8 @@ namespace SportsRecorder.ViewModel
         private ObservableCollection<TrainingJournalItem> Records { get; set; } // 全部的資料
 
         // 區間內的資料(直方圖用，一筆就是日期跟總時間) LiveChartsCore.Defaults 的type
-        private DateTimePoint[] _selectRecord;
-        public DateTimePoint[] SelectRecord
+        private ISeries[] _selectRecord;
+        public ISeries[] SelectRecord
         {
             get => _selectRecord;
             set => SetProperty(ref _selectRecord, value);
@@ -96,6 +100,20 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        private static readonly SKColor[] DarkPalette =
+        [
+            new SKColor(0x1A, 0x3A, 0x6E), // 深海藍
+            new SKColor(0x2A, 0x52, 0xA0), // 靛藍
+            new SKColor(0x3D, 0x6D, 0xB8), // 皇家藍
+            new SKColor(0x2E, 0x7A, 0xA8), // 鋼藍
+            new SKColor(0x1F, 0x6E, 0x8C), // 深青藍
+            new SKColor(0x4A, 0x5E, 0x9E), // 灰藍
+            new SKColor(0x2B, 0x5E, 0xA8), // 中藍
+            new SKColor(0x1A, 0x52, 0x76), // 深孔雀藍
+            new SKColor(0x3A, 0x7D, 0xBF), // 天藍
+            new SKColor(0x35, 0x5E, 0x8A), // 牛仔藍
+        ];
+
         public StatsCardioViewModel()
         {
             _dialogService = new DialogService();
@@ -114,15 +132,49 @@ namespace SportsRecorder.ViewModel
                 .Where(r => r.Date.Date >= StartDate.Date && r.Date.Date <= EndDate.Date)
                 .ToList();
 
-            // 區間內的資料（直方圖用：日期 + 當日有氧總時間）
-            SelectRecord = filteredRecords
+            // 先把所有運動找出來
+            var allCardios = filteredRecords
                 .Where(r => r.Cardios != null && r.Cardios.Count > 0)
-                .Select(r => new DateTimePoint(r.Date.Date, r.CardiosTotalDuration))
-                .ToArray();
+                .SelectMany(r => r.Cardios)
+                .Select(s => s.Name)
+                .Distinct()
+                .ToList();
+
+            // 把日期資料攤平
+            var dateGroups = filteredRecords
+                .Where(r => r.Cardios != null && r.Cardios.Count > 0)
+                .Select(r => new
+                {
+                    r.Date.Date,
+                    DurationMins = r.Cardios
+                        .GroupBy(s => s.Name)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => (int)g.Sum(s => s.DurationMin))
+                })
+                .ToList();
+
+            // 區間內的資料（直方圖用：日期 + 各運動時間)
+            SelectRecord = allCardios.Select((Name, index) =>
+                (ISeries)new StackedColumnSeries<DateTimePoint>
+                {
+                    Name = Name,
+                    Values = dateGroups.Select(d => new DateTimePoint
+                    {
+                        DateTime = d.Date,
+                        Value = d.DurationMins.TryGetValue(Name, out var w) ? w : null
+                    }).ToArray(),
+
+                    StackGroup = 0,
+                    ShowDataLabels = true,
+                    Fill = new SolidColorPaint(DarkPalette[index % DarkPalette.Length]) // 循環取色
+                }
+            ).ToArray();
 
             // 區間內的總運動類型（表格用：同名有氧合併加總）
             SelectSheetData = new ObservableCollection<Cardio>(
                 filteredRecords
+                    .Where(r => r.Cardios != null && r.Cardios.Count > 0)
                     .SelectMany(r => r.Cardios)
                     .GroupBy(c => c.Name)
                     .Select(g => new Cardio

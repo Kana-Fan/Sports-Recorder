@@ -57,11 +57,7 @@ namespace SportsRecorder.ViewModel
                 new() { Title = "有氧", Key = "stats-cardio", IconPath = "/Assets/Icons/vo2_max.png" },
                 new() { Title = "重訓", Key = "stats-strength", IconPath = "/Assets/Icons/fitness.png" },
             }},
-            new() { Title = "資料管理", Key = "data", IconPath = "/Assets/Icons/folder.png", Children = new()
-            {
-                new() { Title = "匯出", Key = "export", IconPath = "/Assets/Icons/download.png" },
-                new() { Title = "匯入", Key = "import", IconPath = "/Assets/Icons/upload.png" },
-            }},
+            new() { Title = "資料管理", Key = "data", IconPath = "/Assets/Icons/folder.png"},
         };
 
         // 切換內容
@@ -73,6 +69,7 @@ namespace SportsRecorder.ViewModel
                 "cardio" => new CardioViewModel(),
                 "strength" => new StrengthViewModel(),
                 "stats-cardio" => new StatsCardioViewModel(),
+                "stats-strength" => new StatsStrengthViewModel(),
                 _ => CurrentPage
             };
         }

@@ -154,6 +154,9 @@
         <DataTemplate DataType="{x:Type vm:StatsCardioViewModel}">
             <views:StatsCardioView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StatsStrengthViewModel}">
+            <views:StatsStrengthView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid>
