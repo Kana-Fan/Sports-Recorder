@@ -16,6 +16,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
@@ -32,10 +33,13 @@
                    RenderOptions.BitmapScalingMode="HighQuality"/>
         </StackPanel>
 
-        <DataGrid Grid.Row="1" ItemsSource="{Binding CardioTypes}"
+        <Rectangle Grid.Row="1" Style="{StaticResource TitleDividerLine}"/>
+
+        <DataGrid Grid.Row="2" ItemsSource="{Binding CardioTypes}"
                   Style="{StaticResource ModernDataGrid}"
                   ColumnHeaderStyle="{StaticResource ModernHeader}"
                   CellStyle="{StaticResource ModernCell}"
+                  RowStyle="{StaticResource ModernRow}"
                   CanUserAddRows="False"
                   RowHeaderWidth="0">
             <DataGrid.Columns>
@@ -54,7 +58,7 @@
             </DataGrid.Columns>
         </DataGrid>
 
-        <Grid  Grid.Row="2" Margin="10">
+        <Grid  Grid.Row="3" Margin="10">
             <Button Content="儲存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
             <Button Content="+" Command="{Binding AddEntryCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"/>
         </Grid>

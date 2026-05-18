@@ -1,4 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Office2010.PowerPoint;
+using DocumentFormat.OpenXml.Vml.Office;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
@@ -18,6 +21,29 @@ namespace SportsRecorder.ViewModel
     internal class StatsStrengthViewModel : BaseViewModel
     {
         private readonly IDialogService _dialogService;
+
+        private static readonly SKColor[] DarkPalette =
+        [
+            new SKColor(0x4D, 0x72, 0xC8), // 靛藍
+            new SKColor(0x7A, 0x52, 0xB0), // 深紫
+            new SKColor(0x3D, 0x8A, 0x9E), // 深青
+            new SKColor(0xA0, 0x50, 0x80), // 暗玫紅
+            new SKColor(0x66, 0x55, 0xA8), // 藍紫
+            new SKColor(0xA0, 0x60, 0x40), // 暗橙棕
+            new SKColor(0x4A, 0x7F, 0xA8), // 鋼藍
+            new SKColor(0x8A, 0x4A, 0x6E), // 紫紅
+            new SKColor(0x3D, 0x7A, 0x62), // 暗綠
+            new SKColor(0x5A, 0x8A, 0x7A), // 灰綠
+        ];
+
+        private Dictionary<string, SKColor> BodyPartColor { get; set; } // 部位對應的顏色
+
+        private string _NowBodyPart = string.Empty;
+        public string NowBodyPart
+        {
+            get => _NowBodyPart;
+            set => SetProperty(ref _NowBodyPart, value);
+        }
 
         private ObservableCollection<TrainingJournalItem> Records { get; set; } // 全部的資料
 
@@ -99,20 +125,6 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        private static readonly SKColor[] DarkPalette =
-        [
-            new SKColor(0x4D, 0x72, 0xC8), // 靛藍
-            new SKColor(0x7A, 0x52, 0xB0), // 深紫
-            new SKColor(0x3D, 0x8A, 0x9E), // 深青
-            new SKColor(0xA0, 0x50, 0x80), // 暗玫紅
-            new SKColor(0x66, 0x55, 0xA8), // 藍紫
-            new SKColor(0xA0, 0x60, 0x40), // 暗橙棕
-            new SKColor(0x4A, 0x7F, 0xA8), // 鋼藍
-            new SKColor(0x8A, 0x4A, 0x6E), // 紫紅
-            new SKColor(0x3D, 0x7A, 0x62), // 暗綠
-            new SKColor(0x5A, 0x8A, 0x7A), // 灰綠
-        ];
-
         // Commands
         public ICommand SwitchLineChartCommand { get; }
 
@@ -127,15 +139,32 @@ namespace SportsRecorder.ViewModel
             // Commands
             SwitchLineChartCommand = new RelayCommand<StrengthSheetData>(entry =>
             {
-                if (entry == null) return;
-
-                LineChartData = new ISeries[]
+                if (entry == null)
                 {
-                    new LineSeries<DateTimePoint>
+                    return;
+                }
+
+                else if (NowBodyPart != entry.BodyPart + " - " + entry.Name)
+                {
+                    LineChartData = new ISeries[]
                     {
-                        Values = entry.WeightChanges
-                    }
-                };
+                        new LineSeries<DateTimePoint>
+                        {
+                            Values = entry.WeightChanges,
+                            // 設定折線的顏色與粗細 (Stroke)
+                            Stroke  = new SolidColorPaint(BodyPartColor[entry.BodyPart]) { StrokeThickness = 3 },
+                            Fill = null,
+                            // 設定數據點的填滿顏色 (內部)
+                            GeometryFill = new SolidColorPaint(BodyPartColor[entry.BodyPart]),
+                            // 設定數據點的邊框顏色與粗細
+                            GeometryStroke = new SolidColorPaint(SKColors.White) { StrokeThickness = 2 },
+                            // 設定數據點的大小 (預設是 0 不顯示點)
+                            GeometrySize = 10
+                        }
+                    };
+
+                    NowBodyPart = entry.BodyPart + " - " + entry.Name;
+                }
             });
         }
 
@@ -155,6 +184,18 @@ namespace SportsRecorder.ViewModel
                 .Distinct()
                 .ToList();
 
+            // 設定各部位的顏色
+            BodyPartColor = allBodyParts
+                .Select((bodyPart, index) => new
+                {
+                    bodyPart,
+                    color = DarkPalette[index % DarkPalette.Length]
+                })
+                .ToDictionary(
+                    x => x.bodyPart,
+                    x => x.color
+                );
+
             // 把日期資料攤平
             var dateGroups = filteredRecords
                 .Where(r => r.Strengths != null && r.Strengths.Count > 0)
@@ -170,7 +211,7 @@ namespace SportsRecorder.ViewModel
                 .ToList();
 
             // SelectRecord：每天各部位的總重量（直方圖用）
-            SelectRecord = allBodyParts.Select((bodyPart, index) =>
+            SelectRecord = allBodyParts.Select((bodyPart) =>
                 (ISeries)new ColumnSeries<DateTimePoint>
                 {
                     Name = bodyPart,
@@ -179,7 +220,10 @@ namespace SportsRecorder.ViewModel
                         DateTime = d.Date,
                         Value = d.ByPart.TryGetValue(bodyPart, out var w) ? w : null
                     }).ToArray(),
-                    Fill = new SolidColorPaint(DarkPalette[index % DarkPalette.Length]) // 循環取色
+
+                    ShowDataLabels = true,
+                    DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")), // 數值的顏色
+                    Fill = new SolidColorPaint(BodyPartColor[bodyPart]) // 循環取色
                 }
             ).ToArray();
 
@@ -201,14 +245,33 @@ namespace SportsRecorder.ViewModel
                     })
             );
 
-            // 初始化折線圖資料
-            LineChartData = new ISeries[]
+            if (SelectSheetData.Count == 0)
             {
-                new LineSeries<DateTimePoint>
+                LineChartData = new ISeries[] { };
+            }
+
+            else
+            {
+                // 初始化折線圖資料
+                LineChartData = new ISeries[]
                 {
-                    Values = SelectSheetData.Count != 0 ? SelectSheetData[0].WeightChanges : []
-                }
-            };
+                    new LineSeries<DateTimePoint>
+                    {
+                        Values = SelectSheetData[0].WeightChanges,
+                        // 設定折線的顏色與粗細 (Stroke)
+                        Stroke  = new SolidColorPaint(BodyPartColor[SelectSheetData[0].BodyPart]) { StrokeThickness = 3 },
+                        Fill = null,
+                        // 設定數據點的填滿顏色 (內部)
+                        GeometryFill = new SolidColorPaint(BodyPartColor[SelectSheetData[0].BodyPart]),
+                        // 設定數據點的邊框顏色與粗細
+                        GeometryStroke = new SolidColorPaint(SKColors.White) { StrokeThickness = 2 },
+                        // 設定數據點的大小 (預設是 0 不顯示點)
+                        GeometrySize = 10
+                    }
+                };
+
+                NowBodyPart = SelectSheetData[0].BodyPart + " - " + SelectSheetData[0].Name;
+            }
         }
 
         public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MMMM dd");

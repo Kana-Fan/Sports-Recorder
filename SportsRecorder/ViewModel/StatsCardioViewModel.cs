@@ -102,16 +102,16 @@ namespace SportsRecorder.ViewModel
 
         private static readonly SKColor[] DarkPalette =
         [
-            new SKColor(0x1A, 0x3A, 0x6E), // 深海藍
-            new SKColor(0x2A, 0x52, 0xA0), // 靛藍
-            new SKColor(0x3D, 0x6D, 0xB8), // 皇家藍
-            new SKColor(0x2E, 0x7A, 0xA8), // 鋼藍
-            new SKColor(0x1F, 0x6E, 0x8C), // 深青藍
-            new SKColor(0x4A, 0x5E, 0x9E), // 灰藍
-            new SKColor(0x2B, 0x5E, 0xA8), // 中藍
-            new SKColor(0x1A, 0x52, 0x76), // 深孔雀藍
-            new SKColor(0x3A, 0x7D, 0xBF), // 天藍
-            new SKColor(0x35, 0x5E, 0x8A), // 牛仔藍
+            new SKColor(0x4D, 0x72, 0xC8), // 靛藍
+            new SKColor(0x7A, 0x52, 0xB0), // 深紫
+            new SKColor(0x3D, 0x8A, 0x9E), // 深青
+            new SKColor(0xA0, 0x50, 0x80), // 暗玫紅
+            new SKColor(0x66, 0x55, 0xA8), // 藍紫
+            new SKColor(0xA0, 0x60, 0x40), // 暗橙棕
+            new SKColor(0x4A, 0x7F, 0xA8), // 鋼藍
+            new SKColor(0x8A, 0x4A, 0x6E), // 紫紅
+            new SKColor(0x3D, 0x7A, 0x62), // 暗綠
+            new SKColor(0x5A, 0x8A, 0x7A), // 灰綠
         ];
 
         public StatsCardioViewModel()
@@ -167,6 +167,7 @@ namespace SportsRecorder.ViewModel
 
                     StackGroup = 0,
                     ShowDataLabels = true,
+                    DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")), // 數值的顏色
                     Fill = new SolidColorPaint(DarkPalette[index % DarkPalette.Length]) // 循環取色
                 }
             ).ToArray();

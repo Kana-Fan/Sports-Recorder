@@ -7,8 +7,12 @@
         xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
         xmlns:m="clr-namespace:SportsRecorder.Model"
         xmlns:views="clr-namespace:SportsRecorder.Views"
+        xmlns:wpf="clr-namespace:TitlebarAdaptive.WPF;assembly=TitlebarAdaptive.WPF"
+        wpf:OriginalWindowHelper.Adaptive="False"
+        wpf:OriginalWindowHelper.TitleBarIsLight="False"
         mc:Ignorable="d"
         Title="Sports Recorder"
+        Icon="/Assets/Icons/fitness_121040.ico"
         Height="800" Width="1000"
         MinHeight="800" MinWidth="1000">
     <Window.DataContext>
@@ -156,6 +160,9 @@
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:StatsStrengthViewModel}">
             <views:StatsStrengthView />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:DataManagementViewModel}">
+            <views:DataManagementView />
         </DataTemplate>
     </Window.Resources>
 

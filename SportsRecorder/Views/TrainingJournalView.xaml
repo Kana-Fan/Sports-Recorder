@@ -26,6 +26,7 @@
                       Style="{StaticResource ModernDataGrid}"
                       ColumnHeaderStyle="{StaticResource ModernHeader}"
                       CellStyle="{StaticResource ModernCell}"
+                      RowStyle="{StaticResource ModernRow}"
                       CanUserAddRows="False"
                       RowHeaderWidth="0">
                 <DataGrid.Columns>
@@ -68,6 +69,7 @@
                       Style="{StaticResource ModernDataGrid}"
                       ColumnHeaderStyle="{StaticResource ModernHeader}"
                       CellStyle="{StaticResource ModernCell}"
+                      RowStyle="{StaticResource ModernRow}"
                       CanUserAddRows="False">
                 <DataGrid.Columns>
                     <!-- 部位欄位 -->
@@ -132,6 +134,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -144,7 +148,9 @@
             <TextBlock Text="訓練日誌" Style="{StaticResource Title}" />
         </StackPanel>
 
-        <Grid Grid.Row="1">
+        <Rectangle Grid.Row="1" Style="{StaticResource TitleDividerLine}"/>
+
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
@@ -188,7 +194,9 @@
                       Style="{StaticResource DarkComboBoxStyle}"/>
         </Grid>
 
-        <Grid Grid.Row="2">
+        <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
+
+        <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>

@@ -26,6 +26,7 @@
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
@@ -46,6 +47,8 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
@@ -54,38 +57,50 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="起始日期" Style="{StaticResource Subheading}"/>
-            <TextBlock Grid.Row="0" Grid.Column="1" Text="結束日期" Style="{StaticResource Subheading}"/>
-            <TextBlock Grid.Row="0" Grid.Column="2" Text="總運動時間(hrs)" Style="{StaticResource Subheading}"/>
+            <Rectangle Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource TitleDividerLine}"/>
 
-            <DatePicker Grid.Row="1" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}"/>
-            <DatePicker Grid.Row="1" Grid.Column="1" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
-            <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource Subheading}" FontSize="25" Text="{Binding TotalTime}"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="起始日期" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="結束日期" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="1" Grid.Column="2" Text="總運動時間(hrs)" Style="{StaticResource Subheading}"/>
+
+            <DatePicker Grid.Row="2" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}"/>
+            <DatePicker Grid.Row="2" Grid.Column="1" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource Subheading}" FontSize="25" Text="{Binding TotalTime}"/>
+
+            <Rectangle Grid.Row="3" Grid.ColumnSpan="3" Style="{StaticResource DividerLine}"/>
         </Grid>
 
-        <lvc:CartesianChart Grid.Row="2"
-                    Series="{Binding SelectRecord}"
-                    LegendPosition="Right"
-                    LegendTextPaint="#FFA1A7CC"
-                    Background="#FF3A3F54"
-                    Margin="15"
-                    DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
-            <lvc:CartesianChart.XAxes>
-                <lvc:AxesCollection>
-                    <lvc:XamlDateTimeAxis
-                        Interval="1.00:00:00"
-                        DateFormatter="{Binding Formatter}"
-                        LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                        SeparatorsPaint="#c8c8c8"
-                        SeparatorsAtCenter="False"
-                        TicksPaint="#232323"
-                        TicksAtCenter="True"/>
-                </lvc:AxesCollection>
-            </lvc:CartesianChart.XAxes>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <lvc:CartesianChart.YAxes>
-                <lvc:AxesCollection>
-                    <lvc:XamlAxis
+            <TextBlock Grid.Row="0" Text="每日總運動時間" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+
+            <lvc:CartesianChart Grid.Row="1"
+                                Series="{Binding SelectRecord}"
+                                LegendPosition="Right"
+                                LegendTextPaint="#FFA1A7CC"
+                                Background="#FF3A3F54"
+                                Margin="15,0,15,15"
+                                DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
+                <lvc:CartesianChart.XAxes>
+                    <lvc:AxesCollection>
+                        <lvc:XamlDateTimeAxis
+                            Interval="1.00:00:00"
+                            DateFormatter="{Binding Formatter}"
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
+                            SeparatorsPaint="#c8c8c8"
+                            SeparatorsAtCenter="False"
+                            TicksPaint="#232323"
+                            TicksAtCenter="True"/>
+                    </lvc:AxesCollection>
+                </lvc:CartesianChart.XAxes>
+
+                <lvc:CartesianChart.YAxes>
+                    <lvc:AxesCollection>
+                        <lvc:XamlAxis
                         AxisName="總運動時間(min)"
                         NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
                         TextSize="18"
@@ -96,14 +111,18 @@
                         ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
                         TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
                         SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
-                </lvc:AxesCollection>
-            </lvc:CartesianChart.YAxes>
-        </lvc:CartesianChart>
+                    </lvc:AxesCollection>
+                </lvc:CartesianChart.YAxes>
+            </lvc:CartesianChart>
+        </Grid>
 
-        <DataGrid Grid.Row="3" ItemsSource="{Binding SelectSheetData}"
+        <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
+
+        <DataGrid Grid.Row="4" ItemsSource="{Binding SelectSheetData}"
                   Style="{StaticResource ModernDataGrid}"
                   ColumnHeaderStyle="{StaticResource ModernHeader}"
                   CellStyle="{StaticResource ModernCell}"
+                  RowStyle="{StaticResource ModernRow}"
                   CanUserAddRows="False"
                   IsReadOnly="True"
                   RowHeaderWidth="0">

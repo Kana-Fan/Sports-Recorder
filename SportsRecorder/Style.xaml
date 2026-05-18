@@ -204,8 +204,7 @@
 
     <!--表格內文-->
     <Style x:Key="ModernCell" TargetType="DataGridCell">
-        <Setter Property="Background" Value="#FF484E67"/>
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="17"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="Black"/>
@@ -223,6 +222,23 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <!--表格Row-->
+    <Style x:Key="ModernRow" TargetType="DataGridRow">
+        <Setter Property="Background" Value="#FF484E67"/>
+        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Style.Triggers>
+            <!-- 滑鼠移過時的背景色 -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#FF4662D4" />
+            </Trigger>
+            <!-- 當列被選取時的變化 -->
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="#FF3453D2" />
+                <Setter Property="FontWeight" Value="Bold" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!--按鈕-->
@@ -247,7 +263,6 @@
                     </Border>
 
                     <ControlTemplate.Triggers>
-
                         <!-- 滑鼠移入 -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border"
@@ -379,5 +394,16 @@
         <Setter Property="Width" Value="150"/>
         <Setter Property="Height" Value="35"/>
         <Setter Property="FontSize" Value="20"/>
+    </Style>
+
+    <Style x:Key="DividerLine" TargetType="Rectangle">
+        <Setter Property="Margin" Value="10,5,10,5"/>
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Fill" Value="#FF7A7C8C"/>
+    </Style>
+
+    <Style x:Key="TitleDividerLine" TargetType="Rectangle" BasedOn="{StaticResource DividerLine}">
+        <Setter Property="Margin" Value="0,5"/>
+        <Setter Property="Height" Value="2"/>
     </Style>
 </ResourceDictionary>

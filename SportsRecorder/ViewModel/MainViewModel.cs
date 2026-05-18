@@ -70,6 +70,7 @@ namespace SportsRecorder.ViewModel
                 "strength" => new StrengthViewModel(),
                 "stats-cardio" => new StatsCardioViewModel(),
                 "stats-strength" => new StatsStrengthViewModel(),
+                "data" => new DataManagementViewModel(),
                 _ => CurrentPage
             };
         }
