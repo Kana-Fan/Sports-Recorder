@@ -82,7 +82,6 @@
                                 LegendTextPaint="#FFA1A7CC"
                                 Background="#FF3A3F54"
                                 Margin="15,0,15,15"
-                                ZoomMode="Both"
                                 DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
                 <lvc:CartesianChart.XAxes>
                     <lvc:AxesCollection>
@@ -100,9 +99,9 @@
                 <lvc:CartesianChart.YAxes>
                     <lvc:AxesCollection>
                         <lvc:XamlAxis
-                            AxisName="各部位訓練重量(kg)"
                             NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
                             TextSize="18"
+                            Labeler="{Binding YAxisLabeler}"
                             LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
                             SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
                             SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
@@ -133,6 +132,7 @@
 
                 <DataGrid Grid.Column="0"
                           ItemsSource="{Binding SelectSheetData}"
+                          SelectedItem="{Binding SelectedSheetEntry}"
                           Style="{StaticResource ModernDataGrid}"
                           ColumnHeaderStyle="{StaticResource ModernHeader}"
                           CellStyle="{StaticResource ModernCell}"
@@ -143,22 +143,13 @@
                           Margin="10,0,10,10">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="部位" Width="auto" Binding="{Binding BodyPart}"/>
-                        <DataGridTextColumn Header="運動" Width="auto" Binding="{Binding Name}"/>
-                        <DataGridTemplateColumn Header="重量變化" Width="100">
-                            <DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <Button Content="切換"
-                                            Command="{Binding DataContext.SwitchLineChartCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}"
-                                            Style="{StaticResource PrimaryButton}"/>
-                                </DataTemplate>
-                            </DataGridTemplateColumn.CellTemplate>
-                        </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
 
                 <lvc:CartesianChart Grid.Column="1"
                                     Series="{Binding LineChartData}"
+                                    LegendPosition="Right"
+                                    LegendTextPaint="#FFA1A7CC"
                                     Background="#FF3A3F54"
                                     Margin="10,0,10,10"
                                     DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
@@ -166,7 +157,7 @@
                         <lvc:AxesCollection>
                             <lvc:XamlDateTimeAxis
                                 AxisName="{Binding NowBodyPart}"
-                                NamePaint="{lvc:SolidColorPaint Color={StaticResource gray4},FontFamily=DFKai-SB}"
+                                NamePaint="{lvc:SolidColorPaint Color=#FFFFFFFF,FontFamily=DFKai-SB}"
                                 TextSize="18"
                                 Interval="1.00:00:00"
                                 DateFormatter="{Binding Formatter}"
@@ -177,9 +168,9 @@
                     <lvc:CartesianChart.YAxes>
                         <lvc:AxesCollection>
                             <lvc:XamlAxis
-                                AxisName="重量變化(kg)"
                                 NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
                                 TextSize="18"
+                                Labeler="{Binding YAxisLabeler}"
                                 LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
                                 SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
                                 SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"

@@ -1,4 +1,5 @@
-﻿using LiveChartsCore.Defaults;
+﻿using LiveChartsCore;
+using LiveChartsCore.Defaults;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,8 +16,7 @@ namespace SportsRecorder.Model
     {
         public string BodyPart { get; set; } // 訓練部位
 
-        public string Name { get; set; } // 訓練名稱
-
-        public DateTimePoint[] WeightChanges { get; set; } // 重量變化
+        public ISeries[] WeightChanges { get; set; } // 不同運動的重量變化
     }
+
 }

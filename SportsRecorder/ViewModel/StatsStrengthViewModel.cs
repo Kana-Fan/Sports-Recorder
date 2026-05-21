@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Office2010.PowerPoint;
 using DocumentFormat.OpenXml.Vml.Office;
 using LiveChartsCore;
@@ -12,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -63,7 +65,30 @@ namespace SportsRecorder.ViewModel
             set => SetProperty(ref _selectSheetData, value);
         }
 
-        // 用來切換各運動的重量變化
+        // 選擇此 row 的時候會切換重量變化
+        private StrengthSheetData _selectedSheetEntry;
+        public StrengthSheetData SelectedSheetEntry
+        {
+            get => _selectedSheetEntry;
+            set
+            {
+                SetProperty(ref _selectedSheetEntry, value);
+
+                if (value == null)
+                {
+                    return;
+                }
+
+                else if (NowBodyPart != value.BodyPart)
+                {
+                    LineChartData = value.WeightChanges;
+
+                    NowBodyPart = value.BodyPart;
+                }
+            }
+        }
+
+        // 用來表示各運動的重量變化
         private ISeries[] _lineChartData;
         public ISeries[] LineChartData
         {
@@ -125,9 +150,6 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        // Commands
-        public ICommand SwitchLineChartCommand { get; }
-
         public StatsStrengthViewModel()
         {
             _dialogService = new DialogService();
@@ -135,50 +157,36 @@ namespace SportsRecorder.ViewModel
             Records = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>("records.json");
 
             GetData();
-
-            // Commands
-            SwitchLineChartCommand = new RelayCommand<StrengthSheetData>(entry =>
-            {
-                if (entry == null)
-                {
-                    return;
-                }
-
-                else if (NowBodyPart != entry.BodyPart + " - " + entry.Name)
-                {
-                    LineChartData = new ISeries[]
-                    {
-                        new LineSeries<DateTimePoint>
-                        {
-                            Values = entry.WeightChanges,
-                            // 設定折線的顏色與粗細 (Stroke)
-                            Stroke  = new SolidColorPaint(BodyPartColor[entry.BodyPart]) { StrokeThickness = 3 },
-                            Fill = null,
-                            // 設定數據點的填滿顏色 (內部)
-                            GeometryFill = new SolidColorPaint(BodyPartColor[entry.BodyPart]),
-                            // 設定數據點的邊框顏色與粗細
-                            GeometryStroke = new SolidColorPaint(SKColors.White) { StrokeThickness = 2 },
-                            // 設定數據點的大小 (預設是 0 不顯示點)
-                            GeometrySize = 10
-                        }
-                    };
-
-                    NowBodyPart = entry.BodyPart + " - " + entry.Name;
-                }
-            });
         }
 
         private void GetData()
         {
             //  篩選區間內的紀錄
-            var filteredRecords =
+            var strengthRecords =
                 Records
-                .Where(r => r.Date.Date >= StartDate.Date && r.Date.Date <= EndDate.Date)
+                .Where(r =>
+                r.Date.Date >= StartDate.Date && r.Date.Date <= EndDate.Date &&
+                r.Strengths != null && r.Strengths.Count > 0)
                 .ToList();
 
+            UpdateBodyPartColors(strengthRecords);
+
+            // 每天各部位的總重量（直方圖用）
+            UpdateBarChart(strengthRecords);
+
+            // 每個訓練動作的重量變化（表格用）
+            UpdateLineChart(strengthRecords);
+
+            // 初始化折線圖資料
+            LineChartData = SelectSheetData.Count != 0 ? SelectSheetData[0].WeightChanges : new ISeries[] { };
+
+            NowBodyPart = SelectSheetData.Count != 0 ? SelectSheetData[0].BodyPart : "";
+        }
+
+        private void UpdateBodyPartColors(List<TrainingJournalItem> strengthRecords)
+        {
             // 先把所有部位找出來
-            var allBodyParts = filteredRecords
-                .Where(r => r.Strengths != null && r.Strengths.Count > 0)
+            var allBodyParts = strengthRecords
                 .SelectMany(r => r.Strengths)
                 .Select(s => s.BodyPart)
                 .Distinct()
@@ -195,10 +203,19 @@ namespace SportsRecorder.ViewModel
                     x => x.bodyPart,
                     x => x.color
                 );
+        }
+
+        private void UpdateBarChart(List<TrainingJournalItem> strengthRecords)
+        {
+            // 先把所有部位找出來
+            var allBodyParts = strengthRecords
+                .SelectMany(r => r.Strengths)
+                .Select(s => s.BodyPart)
+                .Distinct()
+                .ToList();
 
             // 把日期資料攤平
-            var dateGroups = filteredRecords
-                .Where(r => r.Strengths != null && r.Strengths.Count > 0)
+            var dateGroups = strengthRecords
                 .Select(r => new
                 {
                     r.Date.Date,
@@ -210,7 +227,6 @@ namespace SportsRecorder.ViewModel
                 })
                 .ToList();
 
-            // SelectRecord：每天各部位的總重量（直方圖用）
             SelectRecord = allBodyParts.Select((bodyPart) =>
                 (ISeries)new ColumnSeries<DateTimePoint>
                 {
@@ -226,54 +242,46 @@ namespace SportsRecorder.ViewModel
                     Fill = new SolidColorPaint(BodyPartColor[bodyPart]) // 循環取色
                 }
             ).ToArray();
+        }
 
-            // SelectSheetData：每個訓練動作的重量變化（表格用）
+        private void UpdateLineChart(List<TrainingJournalItem> strengthRecords)
+        {
             // 跨所有日期，把同一 BodyPart + Name 的紀錄合併，記錄每天的最大重量
             SelectSheetData = new ObservableCollection<StrengthSheetData>(
-                filteredRecords
-                    .Where(r => r.Strengths != null && r.Strengths.Count > 0)
-                    .SelectMany(r => r.Strengths.Select(s => new { r.Date.Date, Strength = s }))
-                    .GroupBy(x => new { x.Strength.BodyPart, x.Strength.Name })
-                    .Select(g => new StrengthSheetData
+                strengthRecords
+                    .SelectMany(r => r.Strengths.Select(s => (r.Date.Date, Strength: s)))
+                    .GroupBy(x => x.Strength.BodyPart)                          // 第一層：按部位分組
+                    .Select(bodyGroup => new StrengthSheetData
                     {
-                        BodyPart = g.Key.BodyPart,
-                        Name = g.Key.Name,
-                        WeightChanges = g
-                            .GroupBy(x => x.Date)
-                            .Select(dayGroup => new DateTimePoint(dayGroup.Key, dayGroup.Max(x => x.Strength.WeightKg))) // 同一天同動作取最大重
-                            .ToArray(),
+                        BodyPart = bodyGroup.Key, // 第二層：按動作名稱分組
+                        WeightChanges = BuildWeightChangeSeries(bodyGroup)
                     })
             );
+        }
 
-            if (SelectSheetData.Count == 0)
-            {
-                LineChartData = new ISeries[] { };
-            }
-
-            else
-            {
-                // 初始化折線圖資料
-                LineChartData = new ISeries[]
+        private ISeries[] BuildWeightChangeSeries(IGrouping<string, (DateTime Date, Strength Strength)> bodyGroup)
+        {
+            return bodyGroup
+                .GroupBy(x => x.Strength.Name)
+                .Select(nameGroup => (ISeries)new LineSeries<DateTimePoint>
                 {
-                    new LineSeries<DateTimePoint>
-                    {
-                        Values = SelectSheetData[0].WeightChanges,
-                        // 設定折線的顏色與粗細 (Stroke)
-                        Stroke  = new SolidColorPaint(BodyPartColor[SelectSheetData[0].BodyPart]) { StrokeThickness = 3 },
-                        Fill = null,
-                        // 設定數據點的填滿顏色 (內部)
-                        GeometryFill = new SolidColorPaint(BodyPartColor[SelectSheetData[0].BodyPart]),
-                        // 設定數據點的邊框顏色與粗細
-                        GeometryStroke = new SolidColorPaint(SKColors.White) { StrokeThickness = 2 },
-                        // 設定數據點的大小 (預設是 0 不顯示點)
-                        GeometrySize = 10
-                    }
-                };
-
-                NowBodyPart = SelectSheetData[0].BodyPart + " - " + SelectSheetData[0].Name;
-            }
+                    Name = nameGroup.Key, // 動作名稱當作線的標籤
+                    Values = nameGroup
+                        .GroupBy(x => x.Date)
+                        .Select(dayGroup => new DateTimePoint(
+                            dayGroup.Key,
+                            dayGroup.Max(x => x.Strength.WeightKg) // 同天同動作取最大重
+                        ))
+                        .OrderBy(p => p.DateTime)
+                        .ToArray(),
+                    // 設定數據點的填滿顏色 (內部)
+                    GeometryFill = new SolidColorPaint(BodyPartColor[bodyGroup.Key])
+                })
+                .ToArray();
         }
 
         public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MMMM dd");
+
+        public Func<double, string> YAxisLabeler { get; set; } = value => $"{value:N0} kg";
     }
 }

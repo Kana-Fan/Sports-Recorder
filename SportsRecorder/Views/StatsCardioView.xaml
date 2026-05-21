@@ -76,7 +76,9 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="每日總運動時間" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="0" Text="{Binding SheetTitle}" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+
+            <Button Grid.Row="0" Content="切換" Style="{StaticResource PrimaryButton}" Command="{Binding SwitchSheet}" HorizontalAlignment="Right" Margin="0,0,20,0"/>
 
             <lvc:CartesianChart Grid.Row="1"
                                 Series="{Binding SelectRecord}"
@@ -101,16 +103,16 @@
                 <lvc:CartesianChart.YAxes>
                     <lvc:AxesCollection>
                         <lvc:XamlAxis
-                        AxisName="總運動時間(min)"
-                        NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
-                        TextSize="18"
-                        LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                        SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                        SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
-                        SubseparatorsCount="9"
-                        ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
-                        TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
-                        SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
+                            NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
+                            TextSize="18"
+                            Labeler="{Binding YAxisLabeler}"
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
+                            SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
+                            SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
+                            SubseparatorsCount="9"
+                            ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
+                            TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
+                            SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
                     </lvc:AxesCollection>
                 </lvc:CartesianChart.YAxes>
             </lvc:CartesianChart>
@@ -118,20 +120,31 @@
 
         <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
 
-        <DataGrid Grid.Row="4" ItemsSource="{Binding SelectSheetData}"
-                  Style="{StaticResource ModernDataGrid}"
-                  ColumnHeaderStyle="{StaticResource ModernHeader}"
-                  CellStyle="{StaticResource ModernCell}"
-                  RowStyle="{StaticResource ModernRow}"
-                  CanUserAddRows="False"
-                  IsReadOnly="True"
-                  RowHeaderWidth="0">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
-                <DataGridTextColumn Header="總距離(km)" Width="*" Binding="{Binding DistanceKm}"/>
-                <DataGridTextColumn Header="總次數" Width="*" Binding="{Binding Times}"/>
-                <DataGridTextColumn Header="總時間(min)" Width="*" Binding="{Binding DurationMin}"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="各運動總項" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+
+            <DataGrid Grid.Row="1"
+                      ItemsSource="{Binding SelectSheetData}"
+                      Style="{StaticResource ModernDataGrid}"
+                      ColumnHeaderStyle="{StaticResource ModernHeader}"
+                      CellStyle="{StaticResource ModernCell}"
+                      RowStyle="{StaticResource ModernRow}"
+                      CanUserAddRows="False"
+                      IsReadOnly="True"
+                      RowHeaderWidth="0">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
+                    <DataGridTextColumn Header="總距離(km)" Width="*" Binding="{Binding DistanceKm}"/>
+                    <DataGridTextColumn Header="總次數" Width="*" Binding="{Binding Times}"/>
+                    <DataGridTextColumn Header="總時間(min)" Width="*" Binding="{Binding DurationMin}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
     </Grid>
 </UserControl>

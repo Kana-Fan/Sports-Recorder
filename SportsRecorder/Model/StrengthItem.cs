@@ -8,7 +8,7 @@ namespace SportsRecorder.Model
 {
     internal class StrengthItem
     {
-        public string BodyPart { get; set; }
-        public string Name { get; set; }
+        public string BodyPart { get; set; } = "";
+        public string Name { get; set; } = "";
     }
 }
