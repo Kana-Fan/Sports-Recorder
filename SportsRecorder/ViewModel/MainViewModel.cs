@@ -14,6 +14,7 @@ namespace SportsRecorder.ViewModel
 {
     public class MainViewModel : BaseViewModel
     {
+        private readonly IDialogService _dialogService;
         private BaseViewModel _currentPage; // 目前選的頁面 類似tag
         private NavigationItem _selectedItem; // 暫時沒用到可以拿掉 可以用來控制選單項目的啟用狀態
 
@@ -31,7 +32,10 @@ namespace SportsRecorder.ViewModel
             set
             {
                 if (SetProperty(ref _selectedItem, value))
+                {
                     NavigateTo(value.Key);
+                }
+
             }
         }
 
@@ -39,9 +43,10 @@ namespace SportsRecorder.ViewModel
 
         public MainViewModel()
         {
-            NavigateCommand = new RelayCommand(p => NavigateTo(p as string));
+            _dialogService = new DialogService();
+            NavigateCommand = new NavRelayCommand(p => NavigateTo(p as string));
             NavItems = BuildNavItems();
-            NavigateTo("journal");
+            CurrentPage = new TrainingJournalViewModel();
         }
 
         private ObservableCollection<NavigationItem> BuildNavItems() => new()
@@ -63,16 +68,24 @@ namespace SportsRecorder.ViewModel
         // 切換內容
         private void NavigateTo(string key)
         {
-            CurrentPage = key switch
+            if (CurrentPage.CheckHasChanged() == true)
             {
-                "journal" => new TrainingJournalViewModel(),
-                "cardio" => new CardioViewModel(),
-                "strength" => new StrengthViewModel(),
-                "stats-cardio" => new StatsCardioViewModel(),
-                "stats-strength" => new StatsStrengthViewModel(),
-                "data" => new DataManagementViewModel(),
-                _ => CurrentPage
-            };
+                _dialogService.ShowMessage("有未儲存的變更，請儲存後再切換頁面");
+            }
+
+            else
+            {
+                CurrentPage = key switch
+                {
+                    "journal" => new TrainingJournalViewModel(),
+                    "cardio" => new CardioViewModel(),
+                    "strength" => new StrengthViewModel(),
+                    "stats-cardio" => new StatsCardioViewModel(),
+                    "stats-strength" => new StatsStrengthViewModel(),
+                    "data" => new DataManagementViewModel(),
+                    _ => CurrentPage
+                };
+            }
         }
     }
 }

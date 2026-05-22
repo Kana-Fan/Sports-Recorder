@@ -6,9 +6,28 @@ using System.Threading.Tasks;
 
 namespace SportsRecorder.Model
 {
-    internal class StrengthItem
+    internal class StrengthItem : BaseModel
     {
-        public string BodyPart { get; set; } = "";
-        public string Name { get; set; } = "";
+        private string _bodyPart = "";
+        public string BodyPart
+        {
+            get => _bodyPart;
+            set
+            {
+                _bodyPart = value;
+                OnPropertyChanged(nameof(BodyPart));
+            }
+        }
+
+        private string _name = "";
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                OnPropertyChanged(nameof(Name));
+            }
+        }
     }
 }

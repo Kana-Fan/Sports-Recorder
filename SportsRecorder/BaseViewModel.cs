@@ -27,5 +27,10 @@ namespace SportsRecorder
             OnPropertyChanged(name);
             return true;
         }
+
+        public virtual bool CheckHasChanged()
+        {
+            return false;
+        }
     }
 }

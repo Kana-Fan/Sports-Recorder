@@ -5,13 +5,9 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:local="clr-namespace:SportsRecorder.Views"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
              xmlns:s="clr-namespace:SportsRecorder"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="800">
-    <UserControl.DataContext>
-        <vm:TrainingJournalViewModel/>
-    </UserControl.DataContext>
 
     <UserControl.Resources>
         <s:BodyPartToNamesConverter x:Key="BodyPartToNamesConverter"/>
@@ -22,12 +18,13 @@
         </Style>
         <!-- 有氧表格 -->
         <DataTemplate x:Key="CardioTemplate">
-            <DataGrid ItemsSource="{Binding Cardios}"
+            <DataGrid ItemsSource="{Binding Cardios, Mode=TwoWay}"
                       Style="{StaticResource ModernDataGrid}"
                       ColumnHeaderStyle="{StaticResource ModernHeader}"
                       CellStyle="{StaticResource ModernCell}"
                       RowStyle="{StaticResource ModernRow}"
                       CanUserAddRows="False"
+                      CanUserReorderColumns="False"
                       RowHeaderWidth="0">
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="運動" Width="*">
@@ -65,12 +62,13 @@
 
         <!-- 重訓表格，結構同上但欄位不同 -->
         <DataTemplate x:Key="StrengthTemplate">
-            <DataGrid ItemsSource="{Binding Strengths}"
+            <DataGrid ItemsSource="{Binding Strengths, Mode=TwoWay}"
                       Style="{StaticResource ModernDataGrid}"
                       ColumnHeaderStyle="{StaticResource ModernHeader}"
                       CellStyle="{StaticResource ModernCell}"
                       RowStyle="{StaticResource ModernRow}"
-                      CanUserAddRows="False">
+                      CanUserAddRows="False"
+                      CanUserReorderColumns="False">
                 <DataGrid.Columns>
                     <!-- 部位欄位 -->
                     <DataGridTemplateColumn Header="部位" Width="100">
@@ -209,7 +207,7 @@
             <TextBlock Grid.Row="0" Text="運動項目" Style="{StaticResource Subheading}" Margin="10,10,10,10"/>
 
             <!-- 依類型切換表格 -->
-            <ContentControl Grid.Row="1" Content="{Binding CurrentLog}" Margin="0,0,0,17">
+            <ContentControl Grid.Row="1" Content="{Binding CurrentLog, Mode=TwoWay}" Margin="0,0,0,17">
                 <ContentControl.Style>
                     <Style TargetType="ContentControl">
                         <Style.Triggers>

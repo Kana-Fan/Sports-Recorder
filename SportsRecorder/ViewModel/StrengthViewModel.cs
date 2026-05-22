@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -15,7 +16,7 @@ namespace SportsRecorder.ViewModel
 {
     internal class StrengthViewModel : BaseViewModel
     {
-        private string FileName { get; set; } = "StrengthTypes.json";
+        private const string FileName = "StrengthTypes.json";
 
         private readonly IDialogService _dialogService;
 
@@ -25,7 +26,11 @@ namespace SportsRecorder.ViewModel
         public ObservableCollection<StrengthItem> StrengthTypes
         {
             get => _strengthTypes;
-            private set => SetProperty(ref _strengthTypes, value);
+            set
+            {
+                _strengthTypes = value;
+                OnPropertyChanged(nameof(StrengthTypes));
+            }
         }
 
         private string _searchText;
@@ -38,6 +43,20 @@ namespace SportsRecorder.ViewModel
 
                 // 更新篩選
                 FilteredItems.Refresh();
+            }
+        }
+
+        private bool _hasChange;
+        public bool HasChange
+        {
+            get => _hasChange;
+            set
+            {
+                _hasChange = value;
+                OnPropertyChanged(nameof(HasChange));
+
+                // 通知 WPF 重新檢查 SaveCommand 的狀態
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -58,6 +77,15 @@ namespace SportsRecorder.ViewModel
 
             FilteredItems.Filter = FilterItems;
 
+            // 初始化時，為現有的所有項目訂閱事件
+            foreach (var item in StrengthTypes)
+            {
+                item.PropertyChanged += Item_PropertyChanged;
+            }
+
+            // 監聽集合的變化（新增、刪除、排序）
+            StrengthTypes.CollectionChanged += (s, e) => UpdateDirtyState();
+
             // Commands
             AddEntryCommand = new RelayCommand(() =>
             {
@@ -69,31 +97,10 @@ namespace SportsRecorder.ViewModel
                 if (_dialogService.Confirm($"確定要刪除「{entry.Name}」嗎？", "確認刪除"))
                 {
                     StrengthTypes.Remove(entry);
-
-                    if (JsonStorageService.Save(_strengthTypes, FileName))
-                    {
-                        _dialogService.ShowMessage("儲存成功！");
-                    }
-
-                    else
-                    {
-                        _dialogService.ShowMessage("儲存失敗！！！");
-                    }
                 }
             });
 
-            SaveCommand = new RelayCommand(() =>
-            {
-                if (JsonStorageService.Save(_strengthTypes, FileName))
-                {
-                    _dialogService.ShowMessage("儲存成功！");
-                }
-
-                else
-                {
-                    _dialogService.ShowMessage("儲存失敗！！！");
-                }
-            });
+            SaveCommand = new RelayCommand(execute: ExecuteSave, canExecute: () => HasChange);
         }
 
         private bool FilterItems(object obj)
@@ -110,6 +117,49 @@ namespace SportsRecorder.ViewModel
 
             return item.BodyPart.Contains(SearchText)
                 || item.Name.Contains(SearchText);
+        }
+
+        private void ExecuteSave()
+        {
+            StrengthTypes = new ObservableCollection<StrengthItem>(
+                    StrengthTypes
+                    .Where(x => x.Name != "" && x.BodyPart != ""));
+
+            FilteredItems = CollectionViewSource.GetDefaultView(StrengthTypes);
+
+            if (JsonStorageService.Save(StrengthTypes, FileName))
+            {
+                _dialogService.ShowMessage("儲存成功並刪除空的運動！");
+                HasChange = false;
+            }
+
+            else
+            {
+                _dialogService.ShowMessage("儲存失敗！！！");
+            }
+        }
+
+        // 當任何一個 StrengthItem 的數值改變時，都會觸發這裡
+        private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // 任何欄位改變，就執行 JSON 比對
+            UpdateDirtyState();
+        }
+
+        private void UpdateDirtyState()
+        {
+            ObservableCollection<StrengthItem> oldCardioTypes = JsonStorageService.Load<ObservableCollection<StrengthItem>>(FileName);
+
+            string currentJson = JsonSerializer.Serialize(StrengthTypes);
+            string oldJson = JsonSerializer.Serialize(oldCardioTypes);
+
+            // 更新狀態，這會觸發 UI 按鈕的啟用/停用
+            HasChange = currentJson != oldJson;
+        }
+
+        public override bool CheckHasChanged()
+        {
+            return HasChange;
         }
     }
 }

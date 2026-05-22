@@ -10,13 +10,13 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Height="200" Width="400">
+        SizeToContent="WidthAndHeight">
     <Border Background="#1E1E2E" CornerRadius="12"
         BorderBrush="#FF959AB7" BorderThickness="1">
         <StackPanel Margin="24" VerticalAlignment="Center">
             <TextBlock Text="╰（￣▽￣）╭" Style="{StaticResource Title}" HorizontalAlignment="Center" />
 
-            <TextBlock x:Name="MessageText" Style="{StaticResource Subheading}"  HorizontalAlignment="Center"/>
+            <TextBlock x:Name="MessageText" Style="{StaticResource Subheading}"  HorizontalAlignment="Center" TextWrapping="WrapWithOverflow"/>
 
             <Button x:Name="ConfirmButton" Content="確認" Margin="10" Style="{StaticResource PrimaryButton}" Click="ConfirmButton_Click" />
         </StackPanel>
