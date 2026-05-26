@@ -36,7 +36,7 @@
                Margin="5"
                VerticalAlignment="Center"
                RenderOptions.BitmapScalingMode="HighQuality"/>
-            <TextBlock Text="統計分析 - 重量訓練" Style="{StaticResource Title}" />
+            <TextBlock Text="統計圖表 - 重量訓練" Style="{StaticResource Title}" />
             <Image Source="/Assets/Icons/fitness.png"
                Width="25" Height="25"
                Margin="5"
@@ -48,7 +48,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
+                <RowDefinition Height="48"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
@@ -69,49 +69,85 @@
         </Grid>
 
         <Grid Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Row="0" Text="每日各部位訓練總重量(重量*組數*次數)" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+            <lvc:CartesianChart Grid.Column="0"
+                            Series="{Binding SelectRecord}"
+                            Background="#FF3A3F54"
+                            Margin="15,0,15,15"
+                            DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
+                <lvc:CartesianChart.Title>
+                    <lvc:XamlDrawnLabelVisual Text="每日各部位訓練總重量(重量*組數*次數)" TextSize="20" Padding="15">
+                        <lvc:XamlDrawnLabelVisual.Paint>
+                            <lvc:SolidColorPaint Color="#FFA1A7CC" FontFamily="DFKai-SB" />
+                        </lvc:XamlDrawnLabelVisual.Paint>
+                    </lvc:XamlDrawnLabelVisual>
+                </lvc:CartesianChart.Title>
 
-            <lvc:CartesianChart Grid.Row="1"
-                                Series="{Binding SelectRecord}"
-                                LegendPosition="Right"
-                                LegendTextPaint="#FFA1A7CC"
-                                Background="#FF3A3F54"
-                                Margin="15,0,15,15"
-                                DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
                 <lvc:CartesianChart.XAxes>
                     <lvc:AxesCollection>
                         <lvc:XamlDateTimeAxis
-                            Interval="1.00:00:00"
-                            DateFormatter="{Binding Formatter}"
-                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                            SeparatorsPaint="#c8c8c8"
-                            SeparatorsAtCenter="False"
-                            TicksPaint="#232323"
-                            TicksAtCenter="True"/>
+                        Interval="1.00:00:00"
+                        DateFormatter="{Binding Formatter}"
+                        LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
+                        SeparatorsPaint="#c8c8c8"
+                        SeparatorsAtCenter="False"
+                        TicksPaint="#232323"
+                        TicksAtCenter="True"/>
                     </lvc:AxesCollection>
                 </lvc:CartesianChart.XAxes>
 
                 <lvc:CartesianChart.YAxes>
                     <lvc:AxesCollection>
                         <lvc:XamlAxis
-                            NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
-                            TextSize="18"
-                            Labeler="{Binding YAxisLabeler}"
-                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                            SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                            SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
-                            SubseparatorsCount="9"
-                            ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
-                            TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
-                            SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
+                        NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
+                        TextSize="18"
+                        Labeler="{Binding YAxisLabeler}"
+                        LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
+                        SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
+                        SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
+                        SubseparatorsCount="9"
+                        ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
+                        TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
+                        SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
                     </lvc:AxesCollection>
                 </lvc:CartesianChart.YAxes>
             </lvc:CartesianChart>
+
+            <!-- 自訂圖例 -->
+            <ItemsControl Grid.Column="1"
+                          ItemsSource="{Binding BodyPartLegendItems}"
+                          VerticalAlignment="Center"
+                          Margin="0,0,15,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ToggleButton IsChecked="{Binding IsVisible}"
+                                      Command="{Binding DataContext.BodyPartToggleSeries,
+                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                      CommandParameter="{Binding Name}"
+                                      Background="Transparent"
+                                      BorderThickness="0"
+                                      Cursor="Hand"
+                                      Margin="0,5">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="10" Height="10" Margin="0,0,5,0">
+                                    <Ellipse.Fill>
+                                        <SolidColorBrush Color="{Binding Color}"/>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <TextBlock Text="{Binding Name}"
+                                           Foreground="#FFA1A7CC"
+                                           FontFamily="DFKai-SB"
+                                           FontSize="20"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </ToggleButton>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </Grid>
 
         <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
@@ -122,65 +158,91 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="每日各部位訓練重量變化" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+            <TextBlock Grid.Row="0" Text="各部位每日最大訓練重量" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <DataGrid Grid.Column="0"
-                          ItemsSource="{Binding SelectSheetData}"
-                          SelectedItem="{Binding SelectedSheetEntry}"
-                          Style="{StaticResource ModernDataGrid}"
-                          ColumnHeaderStyle="{StaticResource ModernHeader}"
-                          CellStyle="{StaticResource ModernCell}"
-                          RowStyle="{StaticResource ModernRow}"
-                          CanUserAddRows="False"
-                          IsReadOnly="True"
-                          RowHeaderWidth="0"
-                          Margin="10,0,10,10">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="部位" Width="auto" Binding="{Binding BodyPart}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
+                <lvc:CartesianChart Grid.Column="0"
+                                Series="{Binding LineChartData}"
+                                Background="#FF3A3F54"
+                                Margin="10,0,10,10"
+                                DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
+                    <lvc:CartesianChart.Title>
+                        <lvc:XamlDrawnLabelVisual Text="{Binding NowBodyPart, UpdateSourceTrigger=PropertyChanged}" TextSize="20" Padding="15">
+                            <lvc:XamlDrawnLabelVisual.Paint>
+                                <lvc:SolidColorPaint Color="#FFFFFFFF" FontFamily="DFKai-SB" />
+                            </lvc:XamlDrawnLabelVisual.Paint>
+                        </lvc:XamlDrawnLabelVisual>
+                    </lvc:CartesianChart.Title>
 
-                <lvc:CartesianChart Grid.Column="1"
-                                    Series="{Binding LineChartData}"
-                                    LegendPosition="Right"
-                                    LegendTextPaint="#FFA1A7CC"
-                                    Background="#FF3A3F54"
-                                    Margin="10,0,10,10"
-                                    DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
                     <lvc:CartesianChart.XAxes>
                         <lvc:AxesCollection>
                             <lvc:XamlDateTimeAxis
-                                AxisName="{Binding NowBodyPart}"
-                                NamePaint="{lvc:SolidColorPaint Color=#FFFFFFFF,FontFamily=DFKai-SB}"
-                                TextSize="18"
-                                Interval="1.00:00:00"
-                                DateFormatter="{Binding Formatter}"
-                                LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"/>
+                            Interval="1.00:00:00"
+                            DateFormatter="{Binding Formatter}"
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"/>
                         </lvc:AxesCollection>
                     </lvc:CartesianChart.XAxes>
 
                     <lvc:CartesianChart.YAxes>
                         <lvc:AxesCollection>
                             <lvc:XamlAxis
-                                NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
-                                TextSize="18"
-                                Labeler="{Binding YAxisLabeler}"
-                                LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                                SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                                SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
-                                SubseparatorsCount="9"
-                                ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
-                                TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
-                                SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
+                            NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
+                            TextSize="18"
+                            Labeler="{Binding YAxisLabeler}"
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
+                            SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
+                            SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
+                            SubseparatorsCount="9"
+                            ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
+                            TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
+                            SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
                         </lvc:AxesCollection>
                     </lvc:CartesianChart.YAxes>
                 </lvc:CartesianChart>
+
+                <!-- 自訂圖例 -->
+                <ItemsControl Grid.Column="1"
+                              ItemsSource="{Binding ExercisesLegendItems}"
+                              VerticalAlignment="Center"
+                              Margin="0,0,15,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ToggleButton IsChecked="{Binding IsVisible}"
+                                          Command="{Binding DataContext.ExercisesToggleSeries,
+                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                          CommandParameter="{Binding Name}"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Cursor="Hand"
+                                          Margin="0,5">
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- SVG 圖案 -->
+                                    <Viewbox Width="16" Height="16"
+                                             Margin="0,0,5,0"
+                                             VerticalAlignment="Center">
+                                        <Path Data="{Binding SvgPath}"
+                                              Stretch="Uniform"
+                                              StrokeThickness="1.5">
+                                            <Path.Fill>
+                                                <SolidColorBrush Color="{Binding Color}"/>
+                                            </Path.Fill>
+                                        </Path>
+                                    </Viewbox>
+                                    <TextBlock Text="{Binding Name}"
+                                               Foreground="#FFA1A7CC"
+                                               FontFamily="DFKai-SB"
+                                               FontSize="20"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ToggleButton>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </Grid>
         </Grid>
     </Grid>

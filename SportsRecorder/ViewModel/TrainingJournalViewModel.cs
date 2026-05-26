@@ -64,8 +64,16 @@ namespace SportsRecorder.ViewModel
             get => _selectedDate;
             set
             {
-                SetProperty(ref _selectedDate, value);
-                LoadOrCreateLog(value); // 日期變更就重新載入
+                if (HasChange)
+                {
+                    _dialogService.ShowMessage("當前日期有未儲存的項目，請先儲存");
+                }
+
+                else
+                {
+                    SetProperty(ref _selectedDate, value);
+                    LoadOrCreateLog(value); // 日期變更就重新載入
+                }
             }
         }
 

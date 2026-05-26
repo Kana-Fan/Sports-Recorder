@@ -3,6 +3,7 @@ using LiveChartsCore.Defaults;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,11 +13,23 @@ namespace SportsRecorder.Model
     /// <summary>
     /// 統計分析用的class。
     /// </summary>
-    public class StrengthSheetData
+    public class LegendItem : BaseModel
     {
-        public string BodyPart { get; set; } // 訓練部位
+        public string Name { get; set; }
+        public string Color { get; set; } // "#4D72C8" 格式
 
-        public ISeries[] WeightChanges { get; set; } // 不同運動的重量變化
+        public string SvgPath { get; set; }
+
+        private bool _isVisible = true;
+        public bool IsVisible
+        {
+            get => _isVisible;
+            set
+            {
+                _isVisible = value;
+                OnPropertyChanged(nameof(IsVisible));
+            }
+        }
     }
 
 }

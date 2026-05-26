@@ -397,30 +397,49 @@ namespace SportsRecorder.ViewModel
             try
             {
                 if (cell.DataType == XLDataType.DateTime)
+                {
                     return cell.GetDateTime().ToString("yyyy-MM-dd");
+                }
 
                 var str = cell.GetString().Trim();
                 if (DateTime.TryParse(str, out var dt))
+                {
                     return dt.ToString("yyyy-MM-dd");
+                }
 
                 throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 不是有效的日期：'{str}'");
             }
-            catch (InvalidDataException) { throw; }
-            catch { throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 日期格式錯誤"); }
+            catch (InvalidDataException)
+            {
+                throw;
+            }
+            catch
+            {
+                throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 日期格式錯誤");
+            }
         }
 
         private string ParseString(IXLCell cell, string sheet, int row, string col)
         {
             var val = cell.GetString().Trim();
             if (string.IsNullOrEmpty(val))
+            {
                 throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 不可為空白");
+            }
+
             return val;
         }
 
         private double ParseDouble(IXLCell cell, string sheet, int row, string col)
         {
-            try { return cell.GetDouble(); }
-            catch { throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 必須是數字，目前值：'{cell.GetString()}'"); }
+            try
+            {
+                return cell.GetDouble();
+            }
+            catch
+            {
+                throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 必須是數字，目前值：'{cell.GetString()}'");
+            }
         }
 
         private int ParseInt(IXLCell cell, string sheet, int row, string col)
@@ -432,8 +451,14 @@ namespace SportsRecorder.ViewModel
                     throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 不可為負數：{val}");
                 return val;
             }
-            catch (InvalidDataException) { throw; }
-            catch { throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 必須是整數，目前值：'{cell.GetString()}'"); }
+            catch (InvalidDataException)
+            {
+                throw;
+            }
+            catch
+            {
+                throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 必須是整數，目前值：'{cell.GetString()}'");
+            }
         }
 
         /// <summary>儲存Json，失敗回傳 false</summary>

@@ -57,7 +57,7 @@ namespace SportsRecorder.ViewModel
                 new() { Title = "有氧", Key = "cardio", IconPath = "/Assets/Icons/vo2_max.png" },
                 new() { Title = "重訓", Key = "strength", IconPath = "/Assets/Icons/fitness.png" },
             }},
-            new() { Title = "統計分析", Key = "stats", IconPath = "/Assets/Icons/bar_chart.png", Children = new()
+            new() { Title = "統計圖表", Key = "stats", IconPath = "/Assets/Icons/bar_chart.png", Children = new()
             {
                 new() { Title = "有氧", Key = "stats-cardio", IconPath = "/Assets/Icons/vo2_max.png" },
                 new() { Title = "重訓", Key = "stats-strength", IconPath = "/Assets/Icons/fitness.png" },

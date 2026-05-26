@@ -90,6 +90,7 @@ namespace SportsRecorder.ViewModel
             AddEntryCommand = new RelayCommand(() =>
             {
                 StrengthTypes.Insert(0, new StrengthItem { BodyPart = SearchText, Name = "" });
+                UpdateDirtyState();
             });
 
             DeleteEntryCommand = new RelayCommand<StrengthItem>(entry =>
@@ -97,6 +98,7 @@ namespace SportsRecorder.ViewModel
                 if (_dialogService.Confirm($"確定要刪除「{entry.Name}」嗎？", "確認刪除"))
                 {
                     StrengthTypes.Remove(entry);
+                    UpdateDirtyState();
                 }
             });
 

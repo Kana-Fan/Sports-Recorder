@@ -3,9 +3,12 @@ using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Office2010.PowerPoint;
 using DocumentFormat.OpenXml.Vml.Office;
+using DocumentFormat.OpenXml.Wordprocessing;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Drawing;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using SportsRecorder.Model;
@@ -38,13 +41,69 @@ namespace SportsRecorder.ViewModel
             new SKColor(0x5A, 0x8A, 0x7A), // 灰綠
         ];
 
+        private static readonly string[] GeometrySvgPaths =
+        [
+            "M 0 -10 A 10 10 0 1 1 -0.01 -10 Z",                                          // 圓
+            "M -8 -8 L 8 -8 L 8 8 L -8 8 Z",                                              // 正方形
+            "M 0 -10 L 10 0 L 0 10 L -10 0 Z",                                            // 菱形
+            "M 0 -10 L 10 8 L -10 8 Z",                                                   // 三角形
+            "M 0 -10 L 2.5 -3 L 10 -3 L 4 2 L 6 10 L 0 6 L -6 10 L -4 2 L -10 -3 L -2.5 -3 Z", // 星形
+            "M -10 0 L 10 0 M 0 -10 L 0 10",                                              // 十字
+            "M -8 -8 L 8 8 M 8 -8 L -8 8",                                               // X形
+            "M 0 -10 L 3 -3 L 10 -3 L 5 2 L 7 10 L 0 5 L -7 10 L -5 2 L -10 -3 L -3 -3 Z", // 八角星
+            "M -5 -10 L 5 -10 L 10 0 L 5 10 L -5 10 L -10 0 Z",                          // 六邊形
+            "M 0 -10 L 6 -6 L 10 0 L 6 6 L 0 10 L -6 6 L -10 0 L -6 -6 Z",             // 八邊形
+        ];
+
+        private static readonly SKColor[] StrokePalette =
+        [
+            new SKColor(0xA0, 0xB8, 0xFF), // 淡藍
+            new SKColor(0xD0, 0xA0, 0xFF), // 淡紫
+            new SKColor(0x80, 0xE0, 0xC0), // 薄荷綠
+            new SKColor(0xFF, 0xB0, 0xC0), // 淡玫紅
+            new SKColor(0xFF, 0xD0, 0x80), // 淡金
+            new SKColor(0x80, 0xD0, 0xFF), // 天藍
+            new SKColor(0xE0, 0x90, 0xFF), // 淡洋紅
+            new SKColor(0x90, 0xFF, 0xB0), // 嫩綠
+            new SKColor(0xFF, 0xA0, 0x80), // 珊瑚
+            new SKColor(0xC0, 0xFF, 0xE0), // 冰綠
+        ];
+
+        // 空集合時 代表全顯示
+        private HashSet<string> _bodyPartVisibleSeries = new();
+
+        private HashSet<string> _exercisesVisibleSeries = new();
+
+        private List<TrainingJournalItem> _lastStrengthRecords = new();
+
         private Dictionary<string, SKColor> BodyPartColor { get; set; } // 部位對應的顏色
 
-        private string _NowBodyPart = string.Empty;
+        private ObservableCollection<LegendItem> _bodyPartLegendItems = new();
+        public ObservableCollection<LegendItem> BodyPartLegendItems
+        {
+            get => _bodyPartLegendItems;
+            set => SetProperty(ref _bodyPartLegendItems, value);
+        }
+
+        private ObservableCollection<LegendItem> _exercisesLegendItems = new();
+        public ObservableCollection<LegendItem> ExercisesLegendItems
+        {
+            get => _exercisesLegendItems;
+            set => SetProperty(ref _exercisesLegendItems, value);
+        }
+
+        private string _nowBodyPart = string.Empty;
         public string NowBodyPart
         {
-            get => _NowBodyPart;
-            set => SetProperty(ref _NowBodyPart, value);
+            get => _nowBodyPart;
+            set
+            {
+                if (_nowBodyPart != value)
+                {
+                    _nowBodyPart = value;
+                    OnPropertyChanged(nameof(NowBodyPart));
+                }
+            }
         }
 
         private ObservableCollection<TrainingJournalItem> Records { get; set; } // 全部的資料
@@ -55,37 +114,6 @@ namespace SportsRecorder.ViewModel
         {
             get => _selectRecord;
             set => SetProperty(ref _selectRecord, value);
-        }
-
-        // 區間內的總運動類型(表格用)
-        private ObservableCollection<StrengthSheetData> _selectSheetData;
-        public ObservableCollection<StrengthSheetData> SelectSheetData
-        {
-            get => _selectSheetData;
-            set => SetProperty(ref _selectSheetData, value);
-        }
-
-        // 選擇此 row 的時候會切換重量變化
-        private StrengthSheetData _selectedSheetEntry;
-        public StrengthSheetData SelectedSheetEntry
-        {
-            get => _selectedSheetEntry;
-            set
-            {
-                SetProperty(ref _selectedSheetEntry, value);
-
-                if (value == null)
-                {
-                    return;
-                }
-
-                else if (NowBodyPart != value.BodyPart)
-                {
-                    LineChartData = value.WeightChanges;
-
-                    NowBodyPart = value.BodyPart;
-                }
-            }
         }
 
         // 用來表示各運動的重量變化
@@ -150,6 +178,10 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        // Commands
+        public ICommand BodyPartToggleSeries { get; }
+        public ICommand ExercisesToggleSeries { get; }
+
         public StatsStrengthViewModel()
         {
             _dialogService = new DialogService();
@@ -157,10 +189,65 @@ namespace SportsRecorder.ViewModel
             Records = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>("records.json");
 
             GetData();
+
+            BodyPartToggleSeries = new RelayCommand<string>(name =>
+            {
+                if (_bodyPartVisibleSeries.Contains(name))
+                {
+                    _bodyPartVisibleSeries.Clear(); // 再點一次 → 全顯示
+                    ClearLinechart();
+                }
+                else
+                {
+                    _bodyPartVisibleSeries.Clear();
+                    _bodyPartVisibleSeries.Add(name); // 換成新選的
+
+                    if (NowBodyPart != name)
+                    {
+                        // 每個訓練動作的重量變化
+                        NowBodyPart = name;
+                        UpdateLineChart(_lastStrengthRecords, NowBodyPart);
+                    }
+                }
+
+                foreach (var item in BodyPartLegendItems)
+                {
+                    item.IsVisible = _bodyPartVisibleSeries.Contains(item.Name);
+                }
+
+                UpdateBarChart(_lastStrengthRecords);
+            });
+
+            ExercisesToggleSeries = new RelayCommand<string>(name =>
+            {
+                if (_exercisesVisibleSeries.Contains(name))
+                {
+                    _exercisesVisibleSeries.Remove(name);
+                }
+                else
+                {
+                    _exercisesVisibleSeries.Add(name);
+                }
+
+                if (_exercisesVisibleSeries.Count == ExercisesLegendItems.Count)
+                {
+                    _exercisesVisibleSeries.Clear();
+                }
+
+                foreach (var item in ExercisesLegendItems)
+                {
+                    item.IsVisible = _exercisesVisibleSeries.Contains(item.Name);
+                }
+
+                UpdateLineChart(_lastStrengthRecords, NowBodyPart);
+            });
         }
 
         private void GetData()
         {
+            // 初始化折線圖資料
+            ClearLinechart();
+
             //  篩選區間內的紀錄
             var strengthRecords =
                 Records
@@ -169,18 +256,21 @@ namespace SportsRecorder.ViewModel
                 r.Strengths != null && r.Strengths.Count > 0)
                 .ToList();
 
+            _lastStrengthRecords = strengthRecords;
+
             UpdateBodyPartColors(strengthRecords);
 
             // 每天各部位的總重量（直方圖用）
+            _bodyPartVisibleSeries.Clear();
             UpdateBarChart(strengthRecords);
+        }
 
-            // 每個訓練動作的重量變化（表格用）
-            UpdateLineChart(strengthRecords);
-
-            // 初始化折線圖資料
-            LineChartData = SelectSheetData.Count != 0 ? SelectSheetData[0].WeightChanges : new ISeries[] { };
-
-            NowBodyPart = SelectSheetData.Count != 0 ? SelectSheetData[0].BodyPart : "";
+        private void ClearLinechart()
+        {
+            LineChartData = new ISeries[] { };
+            NowBodyPart = "請選擇運動部位";
+            ExercisesLegendItems.Clear();
+            _exercisesVisibleSeries.Clear();
         }
 
         private void UpdateBodyPartColors(List<TrainingJournalItem> strengthRecords)
@@ -236,48 +326,95 @@ namespace SportsRecorder.ViewModel
                         DateTime = d.Date,
                         Value = d.ByPart.TryGetValue(bodyPart, out var w) ? w : null
                     }).ToArray(),
-
+                    IsVisible = _bodyPartVisibleSeries.Count == 0 || _bodyPartVisibleSeries.Contains(bodyPart),
                     ShowDataLabels = true,
                     DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")), // 數值的顏色
                     Fill = new SolidColorPaint(BodyPartColor[bodyPart]) // 循環取色
                 }
             ).ToArray();
+
+            // 更新圖例（只在系列有變動時重建）
+            if (BodyPartLegendItems.Count != allBodyParts.Count ||
+                !BodyPartLegendItems.Select(l => l.Name).SequenceEqual(allBodyParts))
+            {
+                BodyPartLegendItems = new ObservableCollection<LegendItem>(
+                    allBodyParts.Select((name, i) => new LegendItem
+                    {
+                        Name = name,
+                        Color = "#" + DarkPalette[i % DarkPalette.Length].Red.ToString("X2")
+                                   + DarkPalette[i % DarkPalette.Length].Green.ToString("X2")
+                                   + DarkPalette[i % DarkPalette.Length].Blue.ToString("X2"),
+                        IsVisible = _bodyPartVisibleSeries.Contains(name)
+                    })
+                );
+            }
         }
 
-        private void UpdateLineChart(List<TrainingJournalItem> strengthRecords)
+        private void UpdateLineChart(List<TrainingJournalItem> strengthRecords, string nowBodyPart)
         {
-            // 跨所有日期，把同一 BodyPart + Name 的紀錄合併，記錄每天的最大重量
-            SelectSheetData = new ObservableCollection<StrengthSheetData>(
-                strengthRecords
-                    .SelectMany(r => r.Strengths.Select(s => (r.Date.Date, Strength: s)))
-                    .GroupBy(x => x.Strength.BodyPart)                          // 第一層：按部位分組
-                    .Select(bodyGroup => new StrengthSheetData
+            // 直接過濾指定部位，建立折線系列
+            var bodyGroup = strengthRecords
+                .SelectMany(r => r.Strengths.Select(s => (r.Date.Date, Strength: s)))
+                .Where(x => x.Strength.BodyPart == nowBodyPart)
+                .GroupBy(x => x.Strength.BodyPart)
+                .FirstOrDefault();
+
+            LineChartData = BuildWeightChangeSeries(bodyGroup);
+
+            // 更新圖例（只在系列有變動時重建）
+            var allExercises = LineChartData
+                .Select(s => s.Name)
+                .Distinct()
+                .ToList();
+
+            if (ExercisesLegendItems.Count != allExercises.Count ||
+                !ExercisesLegendItems.Select(l => l.Name).SequenceEqual(allExercises))
+            {
+                ExercisesLegendItems = new ObservableCollection<LegendItem>(
+                    allExercises.Select((name, i) => new LegendItem
                     {
-                        BodyPart = bodyGroup.Key, // 第二層：按動作名稱分組
-                        WeightChanges = BuildWeightChangeSeries(bodyGroup)
+                        Name = name,
+                        Color = "#" + StrokePalette[i % StrokePalette.Length].Red.ToString("X2")
+                                   + StrokePalette[i % StrokePalette.Length].Green.ToString("X2")
+                                   + StrokePalette[i % StrokePalette.Length].Blue.ToString("X2"),
+                        SvgPath = GeometrySvgPaths[i % GeometrySvgPaths.Length],
+                        IsVisible = _exercisesVisibleSeries.Contains(name)
                     })
-            );
+                );
+            }
         }
 
         private ISeries[] BuildWeightChangeSeries(IGrouping<string, (DateTime Date, Strength Strength)> bodyGroup)
         {
-            return bodyGroup
+            var series = bodyGroup
                 .GroupBy(x => x.Strength.Name)
-                .Select(nameGroup => (ISeries)new LineSeries<DateTimePoint>
+                .Select((nameGroup, index) =>
                 {
-                    Name = nameGroup.Key, // 動作名稱當作線的標籤
-                    Values = nameGroup
-                        .GroupBy(x => x.Date)
-                        .Select(dayGroup => new DateTimePoint(
-                            dayGroup.Key,
-                            dayGroup.Max(x => x.Strength.WeightKg) // 同天同動作取最大重
-                        ))
-                        .OrderBy(p => p.DateTime)
-                        .ToArray(),
-                    // 設定數據點的填滿顏色 (內部)
-                    GeometryFill = new SolidColorPaint(BodyPartColor[bodyGroup.Key])
-                })
-                .ToArray();
+                    var strokeColor = StrokePalette[index % StrokePalette.Length];
+
+                    return (ISeries)new LineSeries<DateTimePoint, VariableSVGPathGeometry>
+                    {
+                        Name = nameGroup.Key,
+                        Values = nameGroup
+                            .GroupBy(x => x.Date)
+                            .Select(dayGroup => new DateTimePoint(
+                                dayGroup.Key,
+                                dayGroup.Max(x => x.Strength.WeightKg)
+                            ))
+                            .OrderBy(p => p.DateTime)
+                            .ToArray(),
+                        Fill = null,
+                        GeometryFill = new SolidColorPaint(strokeColor),
+                        GeometryStroke = new SolidColorPaint(strokeColor) { StrokeThickness = 3 },
+                        Stroke = new SolidColorPaint(strokeColor) { StrokeThickness = 3 },
+                        GeometrySize = 15,
+                        GeometrySvg = GeometrySvgPaths[index % GeometrySvgPaths.Length],
+                        IsVisible = _exercisesVisibleSeries.Count == 0 || _exercisesVisibleSeries.Contains(nameGroup.Key),
+                        Mapping = null,
+                    };
+                });
+
+            return series.ToArray();
         }
 
         public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MMMM dd");

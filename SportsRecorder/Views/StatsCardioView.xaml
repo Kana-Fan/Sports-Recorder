@@ -35,7 +35,7 @@
                    Margin="5"
                    VerticalAlignment="Center"
                    RenderOptions.BitmapScalingMode="HighQuality"/>
-            <TextBlock Text="統計分析 - 有氧運動" Style="{StaticResource Title}" />
+            <TextBlock Text="統計圖表 - 有氧運動" Style="{StaticResource Title}" />
             <Image Source="/Assets/Icons/vo2_max.png"
                    Width="25" Height="25"
                    Margin="5"
@@ -65,28 +65,36 @@
 
             <DatePicker Grid.Row="2" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}"/>
             <DatePicker Grid.Row="2" Grid.Column="1" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
-            <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource Subheading}" FontSize="25" Text="{Binding TotalTime}"/>
+            <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource Subheading}" Text="{Binding TotalTime}"/>
 
             <Rectangle Grid.Row="3" Grid.ColumnSpan="3" Style="{StaticResource DividerLine}"/>
         </Grid>
 
         <Grid Grid.Row="2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="{Binding SheetTitle}" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-            <Button Grid.Row="0" Content="切換" Style="{StaticResource PrimaryButton}" Command="{Binding SwitchSheet}" HorizontalAlignment="Right" Margin="0,0,20,0"/>
-
-            <lvc:CartesianChart Grid.Row="1"
+            <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
                                 Series="{Binding SelectRecord}"
-                                LegendPosition="Right"
-                                LegendTextPaint="#FFA1A7CC"
                                 Background="#FF3A3F54"
                                 Margin="15,0,15,15"
                                 DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
+                <lvc:CartesianChart.Title>
+                    <lvc:XamlDrawnLabelVisual Text="{Binding SheetTitle}" TextSize="20" Padding="15">
+                        <lvc:XamlDrawnLabelVisual.Paint>
+                            <lvc:SolidColorPaint Color="#FFA1A7CC" FontFamily="DFKai-SB" />
+                        </lvc:XamlDrawnLabelVisual.Paint>
+                    </lvc:XamlDrawnLabelVisual>
+                </lvc:CartesianChart.Title>
+
                 <lvc:CartesianChart.XAxes>
                     <lvc:AxesCollection>
                         <lvc:XamlDateTimeAxis
@@ -112,39 +120,81 @@
                             SubseparatorsCount="9"
                             ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
                             TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
-                            SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
+                            SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
+                            MinLimit="0"/>
                     </lvc:AxesCollection>
                 </lvc:CartesianChart.YAxes>
             </lvc:CartesianChart>
+
+            <Grid Grid.Row="0" Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- 自訂圖例 -->
+                <ItemsControl Grid.Row="0"
+                              ItemsSource="{Binding LegendItems}"
+                              VerticalAlignment="Center"
+                              Margin="0,0,15,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <ToggleButton IsChecked="{Binding IsVisible}"
+                                          Command="{Binding DataContext.ToggleSeries,
+                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                          CommandParameter="{Binding Name}"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          Cursor="Hand"
+                                          Margin="0,5">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" Margin="0,0,5,0">
+                                        <Ellipse.Fill>
+                                            <SolidColorBrush Color="{Binding Color}"/>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                    <TextBlock Text="{Binding Name}"
+                                               Foreground="#FFA1A7CC"
+                                               FontFamily="DFKai-SB"
+                                               FontSize="20"
+                                               VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </ToggleButton>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button Grid.Row="1" Content="切換" Style="{StaticResource PrimaryButton}" Command="{Binding SwitchSheet}" Margin="0,0,17,15"/>
+            </Grid>
+
+            <Rectangle Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource DividerLine}"/>
+
+            <Grid Grid.Row="2" Grid.Column="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0"  Text="各運動紀錄" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+
+                <DataGrid Grid.Row="1"
+                          ItemsSource="{Binding SelectSheetData}"
+                          Style="{StaticResource ModernDataGrid}"
+                          ColumnHeaderStyle="{StaticResource ModernHeader}"
+                          CellStyle="{StaticResource ModernCell}"
+                          RowStyle="{StaticResource ModernRow}"
+                          CanUserAddRows="False"
+                          CanUserReorderColumns="False"
+                          IsReadOnly="True"
+                          RowHeaderWidth="0">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
+                        <DataGridTextColumn Header="總距離(km)" Width="*" Binding="{Binding DistanceKm}"/>
+                        <DataGridTextColumn Header="總次數" Width="*" Binding="{Binding Times}"/>
+                        <DataGridTextColumn Header="總時間(min)" Width="*" Binding="{Binding DurationMin}"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
         </Grid>
-
-        <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
-
-        <Grid Grid.Row="4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <TextBlock Grid.Row="0" Text="各運動總項" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
-
-            <DataGrid Grid.Row="1"
-                      ItemsSource="{Binding SelectSheetData}"
-                      Style="{StaticResource ModernDataGrid}"
-                      ColumnHeaderStyle="{StaticResource ModernHeader}"
-                      CellStyle="{StaticResource ModernCell}"
-                      RowStyle="{StaticResource ModernRow}"
-                      CanUserAddRows="False"
-                      IsReadOnly="True"
-                      RowHeaderWidth="0">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
-                    <DataGridTextColumn Header="總距離(km)" Width="*" Binding="{Binding DistanceKm}"/>
-                    <DataGridTextColumn Header="總次數" Width="*" Binding="{Binding Times}"/>
-                    <DataGridTextColumn Header="總時間(min)" Width="*" Binding="{Binding DurationMin}"/>
-                </DataGrid.Columns>
-            </DataGrid>
-        </Grid>
-
     </Grid>
 </UserControl>

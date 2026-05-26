@@ -69,6 +69,7 @@ namespace SportsRecorder.ViewModel
             AddEntryCommand = new RelayCommand(() =>
             {
                 CardioTypes.Insert(0, new CardioItem());
+                UpdateDirtyState();
             });
 
             DeleteEntryCommand = new RelayCommand<CardioItem>(entry =>
@@ -76,6 +77,7 @@ namespace SportsRecorder.ViewModel
                 if (_dialogService.Confirm($"確定要刪除「{entry.Name}」嗎？", "確認刪除"))
                 {
                     CardioTypes.Remove(entry);
+                    UpdateDirtyState();
                 }
             });
 

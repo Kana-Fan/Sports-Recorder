@@ -1,4 +1,6 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
+﻿using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Bibliography;
+using DocumentFormat.OpenXml.Wordprocessing;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
@@ -22,6 +24,32 @@ namespace SportsRecorder.ViewModel
         private readonly IDialogService _dialogService;
 
         private static bool _sheetIsTime = true;
+
+        private static readonly SKColor[] DarkPalette =
+        [
+            new SKColor(0x4D, 0x72, 0xC8), // 靛藍
+            new SKColor(0x7A, 0x52, 0xB0), // 深紫
+            new SKColor(0x3D, 0x8A, 0x9E), // 深青
+            new SKColor(0xA0, 0x50, 0x80), // 暗玫紅
+            new SKColor(0x66, 0x55, 0xA8), // 藍紫
+            new SKColor(0xA0, 0x60, 0x40), // 暗橙棕
+            new SKColor(0x4A, 0x7F, 0xA8), // 鋼藍
+            new SKColor(0x8A, 0x4A, 0x6E), // 紫紅
+            new SKColor(0x3D, 0x7A, 0x62), // 暗綠
+            new SKColor(0x5A, 0x8A, 0x7A), // 灰綠
+        ];
+
+        // 空集合時 代表全顯示
+        private HashSet<string> _visibleSeries = new();
+
+        private List<TrainingJournalItem> _lastCardioRecords = new();
+
+        private ObservableCollection<LegendItem> _legendItems = new();
+        public ObservableCollection<LegendItem> LegendItems
+        {
+            get => _legendItems;
+            set => SetProperty(ref _legendItems, value);
+        }
 
         private ObservableCollection<TrainingJournalItem> Records { get; set; } // 全部的資料
 
@@ -113,22 +141,10 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        private static readonly SKColor[] DarkPalette =
-        [
-            new SKColor(0x4D, 0x72, 0xC8), // 靛藍
-            new SKColor(0x7A, 0x52, 0xB0), // 深紫
-            new SKColor(0x3D, 0x8A, 0x9E), // 深青
-            new SKColor(0xA0, 0x50, 0x80), // 暗玫紅
-            new SKColor(0x66, 0x55, 0xA8), // 藍紫
-            new SKColor(0xA0, 0x60, 0x40), // 暗橙棕
-            new SKColor(0x4A, 0x7F, 0xA8), // 鋼藍
-            new SKColor(0x8A, 0x4A, 0x6E), // 紫紅
-            new SKColor(0x3D, 0x7A, 0x62), // 暗綠
-            new SKColor(0x5A, 0x8A, 0x7A), // 灰綠
-        ];
-
         // Commands
         public ICommand SwitchSheet { get; }
+
+        public ICommand ToggleSeries { get; }
 
         public StatsCardioViewModel()
         {
@@ -146,6 +162,30 @@ namespace SportsRecorder.ViewModel
 
                 GetData();
             });
+
+            ToggleSeries = new RelayCommand<string>(name =>
+            {
+                if (_visibleSeries.Contains(name))
+                {
+                    _visibleSeries.Remove(name);
+                }
+                else
+                {
+                    _visibleSeries.Add(name);
+                }
+
+                if (_visibleSeries.Count == LegendItems.Count)
+                {
+                    _visibleSeries.Clear();
+                }
+
+                foreach (var item in LegendItems)
+                {
+                    item.IsVisible = _visibleSeries.Count > 0 && !_visibleSeries.Contains(item.Name);
+                }
+
+                UpdateBarChart(_lastCardioRecords);
+            });
         }
 
         // 獲取期間內的有氧運動資料與總運動時間
@@ -158,6 +198,8 @@ namespace SportsRecorder.ViewModel
                 r.Date.Date >= StartDate.Date && r.Date.Date <= EndDate.Date &&
                 r.Cardios != null && r.Cardios.Count > 0)
                 .ToList();
+
+            _lastCardioRecords = cardioRecords;
 
             // 區間內的資料（直方圖用：日期 + 各運動時間or 各運動距離)
             UpdateBarChart(cardioRecords);
@@ -200,6 +242,27 @@ namespace SportsRecorder.ViewModel
                 })
                 .ToList();
 
+            // 計算每日總和加入折線
+            var totalSeries = new LineSeries<DateTimePoint>
+            {
+                Name = "每日總計",
+                IsVisible = _visibleSeries.Count == 0 || _visibleSeries.Contains("每日總計"),
+                Values = dateGroups.Select(d => new DateTimePoint
+                {
+                    DateTime = d.Date,
+                    Value = _sheetIsTime
+                        ? d.DurationMins.Values.Sum()
+                        : (double?)d.DistanceKms.Values.Sum()
+                }).ToArray(),
+                Fill = null,
+                GeometrySize = 8,
+                GeometryFill = new SolidColorPaint(SKColor.Parse("#FF7C8EFF")),
+                GeometryStroke = new SolidColorPaint(SKColor.Parse("#FF7C8EFF")) { StrokeThickness = 3 },
+                Stroke = new SolidColorPaint(SKColor.Parse("#FF7C8EFF")) { StrokeThickness = 5 },
+                DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")),
+                ShowDataLabels = false
+            };
+
             SelectRecord = allCardios.Select((Name, index) =>
                 (ISeries)new StackedColumnSeries<DateTimePoint>
                 {
@@ -212,11 +275,35 @@ namespace SportsRecorder.ViewModel
                     }).ToArray(),
 
                     StackGroup = 0,
+                    IsVisible = _visibleSeries.Count == 0 || _visibleSeries.Contains(Name),
                     ShowDataLabels = true,
+                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Middle,
                     DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")), // 數值的顏色
                     Fill = new SolidColorPaint(DarkPalette[index % DarkPalette.Length]) // 循環取色
                 }
-            ).ToArray();
+            ).Append(totalSeries).ToArray();
+
+            // 更新圖例（只在系列有變動時重建）
+            if (LegendItems.Count != allCardios.Count ||
+                !LegendItems.Select(l => l.Name).SequenceEqual(allCardios))
+            {
+                LegendItems = new ObservableCollection<LegendItem>(
+                    allCardios.Select((name, i) => new LegendItem
+                    {
+                        Name = name,
+                        Color = "#" + DarkPalette[i % DarkPalette.Length].Red.ToString("X2")
+                                   + DarkPalette[i % DarkPalette.Length].Green.ToString("X2")
+                                   + DarkPalette[i % DarkPalette.Length].Blue.ToString("X2"),
+                        IsVisible = _visibleSeries.Contains(name)
+                    })
+                    .Append(new LegendItem
+                    {
+                        Name = "每日總計",
+                        Color = "#A1A7CC", // 你折線的顏色
+                        IsVisible = _visibleSeries.Count > 0 && _visibleSeries.Contains("每日總計")
+                    })
+                );
+            }
         }
 
         private void UpdateSheet(List<TrainingJournalItem> cardioRecords)
