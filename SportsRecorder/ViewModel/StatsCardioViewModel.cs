@@ -15,6 +15,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel
@@ -76,14 +77,24 @@ namespace SportsRecorder.ViewModel
             set => SetProperty(ref _selectSheetData, value);
         }
 
-        // 期間內的有氧運動總運動時間
-        private double _totalTime = 0;
-        public double TotalTime
+        // 期間內的有氧運動總運動時間or距離
+        private string _totalTxt = "";
+        public string TotalTxt
         {
-            get => _totalTime;
+            get => _totalTxt;
             set
             {
-                SetProperty(ref _totalTime, value);
+                SetProperty(ref _totalTxt, value);
+            }
+        }
+
+        private string _totalData = "";
+        public string TotalData
+        {
+            get => _totalData;
+            set
+            {
+                SetProperty(ref _totalData, value);
             }
         }
 
@@ -146,6 +157,8 @@ namespace SportsRecorder.ViewModel
 
         public ICommand ToggleSeries { get; }
 
+        public ICommand Refresh { get; }
+
         public StatsCardioViewModel()
         {
             _dialogService = new DialogService();
@@ -186,6 +199,20 @@ namespace SportsRecorder.ViewModel
 
                 UpdateBarChart(_lastCardioRecords);
             });
+
+            Refresh = new RelayCommand(() =>
+            {
+                _startDate = DateTime.Today.AddDays(-7);
+                _endDate = DateTime.Today;
+
+                OnPropertyChanged(nameof(StartDate));
+                OnPropertyChanged(nameof(EndDate));
+
+                SheetTitle = "每日運動總時間";
+                GetData();
+
+                _dialogService.ShowMessage("~已恢復到這一周~");
+            });
         }
 
         // 獲取期間內的有氧運動資料與總運動時間
@@ -212,7 +239,7 @@ namespace SportsRecorder.ViewModel
             YAxisLabeler = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
 
             // 期間內的有氧運動總時間
-            TotalTime = Math.Round(cardioRecords.Sum(r => r.CardiosTotalDuration) / 60.0, 2);
+            TotalTxt = _sheetIsTime ? "總運動時間" : "總運動距離(km)";
         }
 
         private void UpdateBarChart(List<TrainingJournalItem> cardioRecords)
@@ -241,6 +268,10 @@ namespace SportsRecorder.ViewModel
                             g => (double)g.Sum(s => s.DistanceKm))
                 })
                 .ToList();
+
+            TotalData = _sheetIsTime
+                        ? $"{dateGroups.Sum(d => d.DurationMins.Values.Sum()) / 60} 小時 {dateGroups.Sum(d => d.DurationMins.Values.Sum()) % 60} 分鐘"
+                        : $"{dateGroups.Sum(d => d.DistanceKms.Values.Sum()):F2} 公里";
 
             // 計算每日總和加入折線
             var totalSeries = new LineSeries<DateTimePoint>
@@ -323,7 +354,7 @@ namespace SportsRecorder.ViewModel
             );
         }
 
-        public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MMMM dd");
+        public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MM/dd");
 
         public Func<double, string> YAxisLabeler { get; set; } = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
     }

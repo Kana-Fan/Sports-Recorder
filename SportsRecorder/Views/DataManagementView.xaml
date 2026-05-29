@@ -44,7 +44,7 @@
                        Margin="20,5,5,5"
                        VerticalAlignment="Center"
                        RenderOptions.BitmapScalingMode="HighQuality"/>
-                <TextBlock Text="匯入" Style="{StaticResource Subheading}" />
+                <TextBlock Text="匯入 (可匯入 Json 與 Excel )" Style="{StaticResource Subheading}" />
             </StackPanel>
 
             <TextBlock Grid.Row="1" Margin="30,20,5,20" Text="{Binding FileName}" Style="{StaticResource Subheading}" FontSize="20" TextWrapping="WrapWithOverflow"/>

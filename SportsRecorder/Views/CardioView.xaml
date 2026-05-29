@@ -11,7 +11,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
@@ -31,29 +31,32 @@
 
         <Rectangle Grid.Row="1" Style="{StaticResource TitleDividerLine}"/>
 
-        <DataGrid Grid.Row="2" ItemsSource="{Binding CardioTypes, Mode=TwoWay}"
+        <ScrollViewer x:Name="scroll_viewer" Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <DataGrid ItemsSource="{Binding CardioTypes, Mode=TwoWay}"
                   Style="{StaticResource ModernDataGrid}"
                   ColumnHeaderStyle="{StaticResource ModernHeader}"
                   CellStyle="{StaticResource ModernCell}"
                   RowStyle="{StaticResource ModernRow}"
                   CanUserAddRows="False"
                   CanUserReorderColumns="False"
-                  RowHeaderWidth="0">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="運動名稱" Width="*" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <DataGridTextColumn Header="說明" Width="2*" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
-                <DataGridTemplateColumn Header="操作" Width="100">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="刪除"
+                  RowHeaderWidth="0"
+                  PreviewMouseWheel="mousewheel">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="運動名稱" Width="*" Binding="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <DataGridTextColumn Header="說明" Width="2*" Binding="{Binding Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <DataGridTemplateColumn Header="操作" Width="100">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="刪除"
                                     Command="{Binding DataContext.DeleteEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     CommandParameter="{Binding}"
                                     Style="{StaticResource PrimaryButton}"/>
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </ScrollViewer>
 
         <Grid  Grid.Row="3" Margin="10">
             <Button Content="儲存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>

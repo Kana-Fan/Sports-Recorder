@@ -24,5 +24,15 @@ namespace SportsRecorder.Views
         {
             InitializeComponent();
         }
+
+        private void mousewheel(object sender, MouseWheelEventArgs e)
+        {
+            // 呼叫 ScrollViewer 的「MouseWheel」事件
+            var args = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+
+            args.RoutedEvent = ScrollViewer.MouseWheelEvent;
+
+            scroll_viewer.RaiseEvent(args);
+        }
     }
 }

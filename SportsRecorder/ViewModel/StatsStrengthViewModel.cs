@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Bibliography;
 using DocumentFormat.OpenXml.Drawing.Charts;
 using DocumentFormat.OpenXml.Math;
 using DocumentFormat.OpenXml.Office2010.PowerPoint;
@@ -55,19 +56,8 @@ namespace SportsRecorder.ViewModel
             "M 0 -10 L 6 -6 L 10 0 L 6 6 L 0 10 L -6 6 L -10 0 L -6 -6 Z",             // 八邊形
         ];
 
-        private static readonly SKColor[] StrokePalette =
-        [
-            new SKColor(0xA0, 0xB8, 0xFF), // 淡藍
-            new SKColor(0xD0, 0xA0, 0xFF), // 淡紫
-            new SKColor(0x80, 0xE0, 0xC0), // 薄荷綠
-            new SKColor(0xFF, 0xB0, 0xC0), // 淡玫紅
-            new SKColor(0xFF, 0xD0, 0x80), // 淡金
-            new SKColor(0x80, 0xD0, 0xFF), // 天藍
-            new SKColor(0xE0, 0x90, 0xFF), // 淡洋紅
-            new SKColor(0x90, 0xFF, 0xB0), // 嫩綠
-            new SKColor(0xFF, 0xA0, 0x80), // 珊瑚
-            new SKColor(0xC0, 0xFF, 0xE0), // 冰綠
-        ];
+        private static bool _lineIsWeight = true;
+        private static bool _lineIsSet = false;
 
         // 空集合時 代表全顯示
         private HashSet<string> _bodyPartVisibleSeries = new();
@@ -75,6 +65,8 @@ namespace SportsRecorder.ViewModel
         private HashSet<string> _exercisesVisibleSeries = new();
 
         private List<TrainingJournalItem> _lastStrengthRecords = new();
+
+        private List<string> _lastAllBodyParts = new();
 
         private Dictionary<string, SKColor> BodyPartColor { get; set; } // 部位對應的顏色
 
@@ -122,6 +114,17 @@ namespace SportsRecorder.ViewModel
         {
             get => _lineChartData;
             set => SetProperty(ref _lineChartData, value);
+        }
+
+        private string _lineChartTitle = string.Empty;
+        public string LineChartTitle
+        {
+            get => _lineChartTitle;
+            set
+            {
+                _lineChartTitle = value;
+                OnPropertyChanged(nameof(LineChartTitle));
+            }
         }
 
         // 開始日期
@@ -181,6 +184,9 @@ namespace SportsRecorder.ViewModel
         // Commands
         public ICommand BodyPartToggleSeries { get; }
         public ICommand ExercisesToggleSeries { get; }
+        public ICommand SwitchSheet { get; }
+
+        public ICommand Refresh { get; }
 
         public StatsStrengthViewModel()
         {
@@ -215,7 +221,7 @@ namespace SportsRecorder.ViewModel
                     item.IsVisible = _bodyPartVisibleSeries.Contains(item.Name);
                 }
 
-                UpdateBarChart(_lastStrengthRecords);
+                UpdateBarChart(_lastAllBodyParts);
             });
 
             ExercisesToggleSeries = new RelayCommand<string>(name =>
@@ -241,6 +247,41 @@ namespace SportsRecorder.ViewModel
 
                 UpdateLineChart(_lastStrengthRecords, NowBodyPart);
             });
+
+            SwitchSheet = new RelayCommand(() =>
+            {
+                if (_lineIsWeight) // 如果現在是顯示重量
+                {
+                    _lineIsWeight = false;
+                    _lineIsSet = true;
+                }
+                else if (!_lineIsWeight && _lineIsSet)
+                {
+                    _lineIsSet = false;
+                }
+                else
+                {
+                    _lineIsWeight = true;
+                }
+
+                LineChartTitle = _lineIsWeight ? "各部位運動每日最大訓練重量" : _lineIsSet ? "各部位運動每日組數" : "各部位運動每日次數";
+                LineYAxisLabeler = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
+                _bodyPartVisibleSeries.Clear();
+                UpdateLineChart(_lastStrengthRecords, NowBodyPart);
+            });
+
+            Refresh = new RelayCommand(() =>
+            {
+                _startDate = DateTime.Today.AddDays(-7);
+                _endDate = DateTime.Today;
+
+                OnPropertyChanged(nameof(StartDate));
+                OnPropertyChanged(nameof(EndDate));
+
+                GetData();
+
+                _dialogService.ShowMessage("~已恢復到這一周~");
+            });
         }
 
         private void GetData()
@@ -256,32 +297,36 @@ namespace SportsRecorder.ViewModel
                 r.Strengths != null && r.Strengths.Count > 0)
                 .ToList();
 
+            var allBodyParts = strengthRecords
+               .SelectMany(r => r.Strengths)
+               .Select(s => s.BodyPart)
+               .Distinct()
+               .ToList();
+
+            _lastAllBodyParts = allBodyParts;
             _lastStrengthRecords = strengthRecords;
 
-            UpdateBodyPartColors(strengthRecords);
+            UpdateBodyPartColors(allBodyParts);
 
             // 每天各部位的總重量（直方圖用）
             _bodyPartVisibleSeries.Clear();
-            UpdateBarChart(strengthRecords);
+            UpdateBarChart(allBodyParts);
         }
 
         private void ClearLinechart()
         {
             LineChartData = new ISeries[] { };
             NowBodyPart = "請選擇運動部位";
+            LineChartTitle = "各部位運動每日最大訓練重量";
+            LineYAxisLabeler = value => $"{value:N0} kg";
+            _lineIsWeight = true;
+            _lineIsSet = false;
             ExercisesLegendItems.Clear();
             _exercisesVisibleSeries.Clear();
         }
 
-        private void UpdateBodyPartColors(List<TrainingJournalItem> strengthRecords)
+        private void UpdateBodyPartColors(List<string> allBodyParts)
         {
-            // 先把所有部位找出來
-            var allBodyParts = strengthRecords
-                .SelectMany(r => r.Strengths)
-                .Select(s => s.BodyPart)
-                .Distinct()
-                .ToList();
-
             // 設定各部位的顏色
             BodyPartColor = allBodyParts
                 .Select((bodyPart, index) => new
@@ -295,17 +340,10 @@ namespace SportsRecorder.ViewModel
                 );
         }
 
-        private void UpdateBarChart(List<TrainingJournalItem> strengthRecords)
+        private void UpdateBarChart(List<string> allBodyParts)
         {
-            // 先把所有部位找出來
-            var allBodyParts = strengthRecords
-                .SelectMany(r => r.Strengths)
-                .Select(s => s.BodyPart)
-                .Distinct()
-                .ToList();
-
             // 把日期資料攤平
-            var dateGroups = strengthRecords
+            var dateGroups = _lastStrengthRecords
                 .Select(r => new
                 {
                     r.Date.Date,
@@ -352,6 +390,11 @@ namespace SportsRecorder.ViewModel
 
         private void UpdateLineChart(List<TrainingJournalItem> strengthRecords, string nowBodyPart)
         {
+            if (nowBodyPart == "請選擇運動部位")
+            {
+                return;
+            }
+
             // 直接過濾指定部位，建立折線系列
             var bodyGroup = strengthRecords
                 .SelectMany(r => r.Strengths.Select(s => (r.Date.Date, Strength: s)))
@@ -359,7 +402,23 @@ namespace SportsRecorder.ViewModel
                 .GroupBy(x => x.Strength.BodyPart)
                 .FirstOrDefault();
 
-            LineChartData = BuildWeightChangeSeries(bodyGroup);
+            if (bodyGroup == null)
+            {
+                return;
+            }
+
+            // 取得此部位的運動數量，生成相近色色盤
+            int exerciseCount = bodyGroup
+                .GroupBy(x => x.Strength.Name)
+                .Count();
+
+            SKColor baseColor = BodyPartColor.TryGetValue(nowBodyPart, out var c)
+                ? c
+                : DarkPalette[0];
+
+            SKColor[] analogousPalette = GenerateAnalogousPalette(baseColor, exerciseCount);
+
+            LineChartData = BuildWeightChangeSeries(bodyGroup, analogousPalette);
 
             // 更新圖例（只在系列有變動時重建）
             var allExercises = LineChartData
@@ -374,9 +433,9 @@ namespace SportsRecorder.ViewModel
                     allExercises.Select((name, i) => new LegendItem
                     {
                         Name = name,
-                        Color = "#" + StrokePalette[i % StrokePalette.Length].Red.ToString("X2")
-                                   + StrokePalette[i % StrokePalette.Length].Green.ToString("X2")
-                                   + StrokePalette[i % StrokePalette.Length].Blue.ToString("X2"),
+                        Color = "#" + analogousPalette[i % analogousPalette.Length].Red.ToString("X2")
+                                   + analogousPalette[i % analogousPalette.Length].Green.ToString("X2")
+                                   + analogousPalette[i % analogousPalette.Length].Blue.ToString("X2"),
                         SvgPath = GeometrySvgPaths[i % GeometrySvgPaths.Length],
                         IsVisible = _exercisesVisibleSeries.Contains(name)
                     })
@@ -384,13 +443,13 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        private ISeries[] BuildWeightChangeSeries(IGrouping<string, (DateTime Date, Strength Strength)> bodyGroup)
+        private ISeries[] BuildWeightChangeSeries(IGrouping<string, (DateTime Date, Strength Strength)> bodyGroup, SKColor[] palette)
         {
             var series = bodyGroup
                 .GroupBy(x => x.Strength.Name)
                 .Select((nameGroup, index) =>
                 {
-                    var strokeColor = StrokePalette[index % StrokePalette.Length];
+                    var strokeColor = palette[index % palette.Length];
 
                     return (ISeries)new LineSeries<DateTimePoint, VariableSVGPathGeometry>
                     {
@@ -399,7 +458,7 @@ namespace SportsRecorder.ViewModel
                             .GroupBy(x => x.Date)
                             .Select(dayGroup => new DateTimePoint(
                                 dayGroup.Key,
-                                dayGroup.Max(x => x.Strength.WeightKg)
+                                _lineIsWeight ? dayGroup.Max(x => x.Strength.WeightKg) : _lineIsSet ? dayGroup.Sum(x => x.Strength.Sets) : dayGroup.Sum(x => x.Strength.Reps)
                             ))
                             .OrderBy(p => p.DateTime)
                             .ToArray(),
@@ -417,8 +476,30 @@ namespace SportsRecorder.ViewModel
             return series.ToArray();
         }
 
-        public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MMMM dd");
+        /// <summary>
+        /// 從基底色產生色系
+        /// </summary>
+        private static SKColor[] GenerateAnalogousPalette(SKColor baseColor, int count)
+        {
+            // 轉換到 HSV
+            baseColor.ToHsv(out float h, out float s, out float v);
+
+            return Enumerable.Range(0, count).Select(i =>
+            {
+                float tV = 55f + (40f / Math.Max(count - 1, 1)) * i;  // 55~95
+                float tS = 100f - (50f / Math.Max(count - 1, 1)) * i; // 100~50
+
+                // 色相微偏移，讓每條線略有區分（±15度範圍內）
+                float hShift = (i % 2 == 0 ? 1 : -1) * (i / 2) * 8f;
+                float newH = (h + hShift + 360f) % 360f;
+
+                return SKColor.FromHsv(newH, Math.Clamp(tS, 40f, 100f), Math.Clamp(tV, 50f, 100f));
+            }).ToArray();
+        }
+
+        public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MM/dd");
 
         public Func<double, string> YAxisLabeler { get; set; } = value => $"{value:N0} kg";
+        public Func<double, string> LineYAxisLabeler { get; set; } = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
     }
 }

@@ -21,11 +21,9 @@
         <sys:String x:Key="gray4">#FFA1A7CC</sys:String>
     </UserControl.Resources>
 
-    <Grid Background="#1A1D27">
+    <Grid Name="ChartContainer" Background="#1A1D27">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
@@ -48,133 +46,63 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
-                <RowDefinition Height="48"/>
+                <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto" />
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Rectangle Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource TitleDividerLine}"/>
+            <Rectangle Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource TitleDividerLine}"/>
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="起始日期" Style="{StaticResource Subheading}" Margin="10,10,10,10"/>
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="結束日期" Style="{StaticResource Subheading}" Margin="10,10,10,10"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="起始日期" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="1" Grid.Column="2" Text="結束日期" Style="{StaticResource Subheading}"/>
 
-            <DatePicker Grid.Row="2" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}" Margin="10,0,0,0"/>
-            <DatePicker Grid.Row="2" Grid.Column="1" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}" Margin="10,0,0,0"/>
+            <DatePicker Grid.Row="2" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}"/>
+            <DatePicker Grid.Row="2" Grid.Column="2" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
 
-            <Rectangle Grid.Row="3" Grid.ColumnSpan="2" Style="{StaticResource DividerLine}" Margin="10,5,10,5"/>
+            <Button Grid.Row="2" Grid.Column="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Margin="10"
+                    Width="20" Height="20"
+                    Panel.ZIndex="10"
+                    Command="{Binding Refresh}"
+                    Style="{StaticResource PrimaryButton}">
+                <Image Source="/Assets/Icons/refresh.png"
+                       Width="20" Height="20"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+
+            <Rectangle Grid.Row="3" Grid.ColumnSpan="3" Style="{StaticResource DividerLine}"/>
         </Grid>
 
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <lvc:CartesianChart Grid.Column="0"
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
                             Series="{Binding SelectRecord}"
                             Background="#FF3A3F54"
                             Margin="15,0,15,15"
                             DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
-                <lvc:CartesianChart.Title>
-                    <lvc:XamlDrawnLabelVisual Text="每日各部位訓練總重量(重量*組數*次數)" TextSize="20" Padding="15">
-                        <lvc:XamlDrawnLabelVisual.Paint>
-                            <lvc:SolidColorPaint Color="#FFA1A7CC" FontFamily="DFKai-SB" />
-                        </lvc:XamlDrawnLabelVisual.Paint>
-                    </lvc:XamlDrawnLabelVisual>
-                </lvc:CartesianChart.Title>
-
-                <lvc:CartesianChart.XAxes>
-                    <lvc:AxesCollection>
-                        <lvc:XamlDateTimeAxis
-                        Interval="1.00:00:00"
-                        DateFormatter="{Binding Formatter}"
-                        LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                        SeparatorsPaint="#c8c8c8"
-                        SeparatorsAtCenter="False"
-                        TicksPaint="#232323"
-                        TicksAtCenter="True"/>
-                    </lvc:AxesCollection>
-                </lvc:CartesianChart.XAxes>
-
-                <lvc:CartesianChart.YAxes>
-                    <lvc:AxesCollection>
-                        <lvc:XamlAxis
-                        NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
-                        TextSize="18"
-                        Labeler="{Binding YAxisLabeler}"
-                        LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                        SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                        SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
-                        SubseparatorsCount="9"
-                        ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
-                        TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
-                        SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
-                    </lvc:AxesCollection>
-                </lvc:CartesianChart.YAxes>
-            </lvc:CartesianChart>
-
-            <!-- 自訂圖例 -->
-            <ItemsControl Grid.Column="1"
-                          ItemsSource="{Binding BodyPartLegendItems}"
-                          VerticalAlignment="Center"
-                          Margin="0,0,15,0">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <ToggleButton IsChecked="{Binding IsVisible}"
-                                      Command="{Binding DataContext.BodyPartToggleSeries,
-                            RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                      CommandParameter="{Binding Name}"
-                                      Background="Transparent"
-                                      BorderThickness="0"
-                                      Cursor="Hand"
-                                      Margin="0,5">
-                            <StackPanel Orientation="Horizontal">
-                                <Ellipse Width="10" Height="10" Margin="0,0,5,0">
-                                    <Ellipse.Fill>
-                                        <SolidColorBrush Color="{Binding Color}"/>
-                                    </Ellipse.Fill>
-                                </Ellipse>
-                                <TextBlock Text="{Binding Name}"
-                                           Foreground="#FFA1A7CC"
-                                           FontFamily="DFKai-SB"
-                                           FontSize="20"
-                                           VerticalAlignment="Center"/>
-                            </StackPanel>
-                        </ToggleButton>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Grid>
-
-        <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
-
-        <Grid Grid.Row="4">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
-            <TextBlock Grid.Row="0" Text="各部位每日最大訓練重量" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
-
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <lvc:CartesianChart Grid.Column="0"
-                                Series="{Binding LineChartData}"
-                                Background="#FF3A3F54"
-                                Margin="10,0,10,10"
-                                DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
                     <lvc:CartesianChart.Title>
-                        <lvc:XamlDrawnLabelVisual Text="{Binding NowBodyPart, UpdateSourceTrigger=PropertyChanged}" TextSize="20" Padding="15">
+                        <lvc:XamlDrawnLabelVisual Text="每日各部位總訓練量(重量*組數*次數)" TextSize="20" Padding="15">
                             <lvc:XamlDrawnLabelVisual.Paint>
-                                <lvc:SolidColorPaint Color="#FFFFFFFF" FontFamily="DFKai-SB" />
+                                <lvc:SolidColorPaint Color="#FFA1A7CC" FontFamily="Microsoft JhengHei" />
                             </lvc:XamlDrawnLabelVisual.Paint>
                         </lvc:XamlDrawnLabelVisual>
                     </lvc:CartesianChart.Title>
@@ -184,17 +112,21 @@
                             <lvc:XamlDateTimeAxis
                             Interval="1.00:00:00"
                             DateFormatter="{Binding Formatter}"
-                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"/>
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"
+                            SeparatorsPaint="#c8c8c8"
+                            SeparatorsAtCenter="False"
+                            TicksPaint="#232323"
+                            TicksAtCenter="True"/>
                         </lvc:AxesCollection>
                     </lvc:CartesianChart.XAxes>
 
                     <lvc:CartesianChart.YAxes>
                         <lvc:AxesCollection>
                             <lvc:XamlAxis
-                            NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
+                            NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=Microsoft JhengHei}"
                             TextSize="18"
                             Labeler="{Binding YAxisLabeler}"
-                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"
                             SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
                             SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
                             SubseparatorsCount="9"
@@ -205,45 +137,136 @@
                     </lvc:CartesianChart.YAxes>
                 </lvc:CartesianChart>
 
-                <!-- 自訂圖例 -->
-                <ItemsControl Grid.Column="1"
-                              ItemsSource="{Binding ExercisesLegendItems}"
-                              VerticalAlignment="Center"
-                              Margin="0,0,15,0">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <ToggleButton IsChecked="{Binding IsVisible}"
-                                          Command="{Binding DataContext.ExercisesToggleSeries,
-                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                          CommandParameter="{Binding Name}"
-                                          Background="Transparent"
-                                          BorderThickness="0"
-                                          Cursor="Hand"
-                                          Margin="0,5">
-                                <StackPanel Orientation="Horizontal">
-                                    <!-- SVG 圖案 -->
-                                    <Viewbox Width="16" Height="16"
-                                             Margin="0,0,5,0"
-                                             VerticalAlignment="Center">
-                                        <Path Data="{Binding SvgPath}"
-                                              Stretch="Uniform"
-                                              StrokeThickness="1.5">
-                                            <Path.Fill>
+                <Grid Grid.Row="0" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 自訂圖例 -->
+                    <ItemsControl Grid.Row="0"
+                                  ItemsSource="{Binding BodyPartLegendItems}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,15,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton IsChecked="{Binding IsVisible}"
+                                              Command="{Binding DataContext.BodyPartToggleSeries, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding Name}"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              Cursor="Hand"
+                                              Margin="0,5">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="10" Height="10" Margin="0,0,5,0">
+                                            <Ellipse.Fill>
                                                 <SolidColorBrush Color="{Binding Color}"/>
-                                            </Path.Fill>
-                                        </Path>
-                                    </Viewbox>
-                                    <TextBlock Text="{Binding Name}"
-                                               Foreground="#FFA1A7CC"
-                                               FontFamily="DFKai-SB"
-                                               FontSize="20"
-                                               VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </ToggleButton>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                        <TextBlock Text="{Binding Name}"
+                                                   Foreground="#FFA1A7CC"
+                                                   FontFamily="{StaticResource LINESeedTW_TTF_Rg}"
+                                                   FontSize="20"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Grid.Row="1" Content="儲存圖表" Style="{StaticResource PrimaryButton}" Margin="0,0,15,15" Click="Button_Click"/>
+                </Grid>
+
+                <Rectangle Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource DividerLine}"/>
+
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="{Binding LineChartTitle}" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+
+                <lvc:CartesianChart Grid.Row="3" Grid.Column="0"
+                                Series="{Binding LineChartData}"
+                                Background="#FF3A3F54"
+                                Margin="10,0,10,10"
+                                DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
+                    <lvc:CartesianChart.Title>
+                        <lvc:XamlDrawnLabelVisual Text="{Binding NowBodyPart, UpdateSourceTrigger=PropertyChanged}" TextSize="20" Padding="15">
+                            <lvc:XamlDrawnLabelVisual.Paint>
+                                <lvc:SolidColorPaint Color="#FFFFFFFF" FontFamily="Microsoft JhengHei" />
+                            </lvc:XamlDrawnLabelVisual.Paint>
+                        </lvc:XamlDrawnLabelVisual>
+                    </lvc:CartesianChart.Title>
+
+                    <lvc:CartesianChart.XAxes>
+                        <lvc:AxesCollection>
+                            <lvc:XamlDateTimeAxis
+                            Interval="1.00:00:00"
+                            DateFormatter="{Binding Formatter}"
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"/>
+                        </lvc:AxesCollection>
+                    </lvc:CartesianChart.XAxes>
+
+                    <lvc:CartesianChart.YAxes>
+                        <lvc:AxesCollection>
+                            <lvc:XamlAxis
+                            NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=Microsoft JhengHei}"
+                            TextSize="18"
+                            Labeler="{Binding LineYAxisLabeler}"
+                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"
+                            SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
+                            SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
+                            SubseparatorsCount="9"
+                            ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
+                            TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
+                            SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"/>
+                        </lvc:AxesCollection>
+                    </lvc:CartesianChart.YAxes>
+                </lvc:CartesianChart>
+
+                <Grid Grid.Row="3" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 自訂圖例 -->
+                    <ItemsControl Grid.Row="0"
+                                  ItemsSource="{Binding ExercisesLegendItems}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,15,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton IsChecked="{Binding IsVisible}"
+                                            Command="{Binding DataContext.ExercisesToggleSeries, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding Name}"
+                                            Background="Transparent"
+                                            BorderThickness="0"
+                                            Cursor="Hand"
+                                            Margin="0,5">
+                                    <StackPanel Orientation="Horizontal">
+                                        <!-- SVG 圖案 -->
+                                        <Viewbox Width="16" Height="16"
+                                                Margin="0,0,5,0"
+                                                VerticalAlignment="Center">
+                                            <Path Data="{Binding SvgPath}"
+                                                Stretch="Uniform"
+                                                StrokeThickness="1.5">
+                                                <Path.Fill>
+                                                    <SolidColorBrush Color="{Binding Color}"/>
+                                                </Path.Fill>
+                                            </Path>
+                                        </Viewbox>
+                                        <TextBlock Text="{Binding Name}"
+                                                Foreground="#FFA1A7CC"
+                                                FontFamily="{StaticResource LINESeedTW_TTF_Rg}"
+                                                FontSize="20"
+                                                VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Grid.Row="1" Content="重/組/次" Style="{StaticResource PrimaryButton}" Command="{Binding SwitchSheet}" Margin="0,0,15,15"/>
+                </Grid>
             </Grid>
-        </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

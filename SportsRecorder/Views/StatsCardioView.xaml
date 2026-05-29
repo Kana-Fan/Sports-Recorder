@@ -8,7 +8,7 @@
              xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d"
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="1000" d:DesignWidth="800">
     <UserControl.DataContext>
         <vm:StatsCardioViewModel/>
     </UserControl.DataContext>
@@ -20,13 +20,11 @@
         <sys:String x:Key="gray3">#3c3c3c</sys:String>
     </UserControl.Resources>
 
-    <Grid Background="#1A1D27">
+    <Grid Name="ChartContainer" Background="#1A1D27">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
@@ -52,149 +50,169 @@
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="40"/>
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Rectangle Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource TitleDividerLine}"/>
+            <Rectangle Grid.Row="0" Grid.ColumnSpan="5" Style="{StaticResource TitleDividerLine}"/>
 
             <TextBlock Grid.Row="1" Grid.Column="0" Text="起始日期" Style="{StaticResource Subheading}"/>
-            <TextBlock Grid.Row="1" Grid.Column="1" Text="結束日期" Style="{StaticResource Subheading}"/>
-            <TextBlock Grid.Row="1" Grid.Column="2" Text="總運動時間(hrs)" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="1" Grid.Column="2" Text="結束日期" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding TotalTxt}" Style="{StaticResource Subheading}"/>
 
             <DatePicker Grid.Row="2" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}"/>
-            <DatePicker Grid.Row="2" Grid.Column="1" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
-            <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource Subheading}" Text="{Binding TotalTime}"/>
+            <DatePicker Grid.Row="2" Grid.Column="2" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="4" Style="{StaticResource Subheading}" Text="{Binding TotalData}"/>
 
-            <Rectangle Grid.Row="3" Grid.ColumnSpan="3" Style="{StaticResource DividerLine}"/>
+            <Button Grid.Row="2" Grid.Column="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Margin="10"
+                    Width="20" Height="20"
+                    Panel.ZIndex="10"
+                    Command="{Binding Refresh}"
+                    Style="{StaticResource PrimaryButton}">
+                <Image Source="/Assets/Icons/refresh.png"
+                       Width="20" Height="20"
+                       RenderOptions.BitmapScalingMode="HighQuality"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+
+            <Rectangle Grid.Row="3" Grid.ColumnSpan="5" Style="{StaticResource DividerLine}"/>
         </Grid>
 
-        <Grid Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
-
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
-                                Series="{Binding SelectRecord}"
-                                Background="#FF3A3F54"
-                                Margin="15,0,15,15"
-                                DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
-                <lvc:CartesianChart.Title>
-                    <lvc:XamlDrawnLabelVisual Text="{Binding SheetTitle}" TextSize="20" Padding="15">
-                        <lvc:XamlDrawnLabelVisual.Paint>
-                            <lvc:SolidColorPaint Color="#FFA1A7CC" FontFamily="DFKai-SB" />
-                        </lvc:XamlDrawnLabelVisual.Paint>
-                    </lvc:XamlDrawnLabelVisual>
-                </lvc:CartesianChart.Title>
-
-                <lvc:CartesianChart.XAxes>
-                    <lvc:AxesCollection>
-                        <lvc:XamlDateTimeAxis
-                            Interval="1.00:00:00"
-                            DateFormatter="{Binding Formatter}"
-                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                            SeparatorsPaint="#c8c8c8"
-                            SeparatorsAtCenter="False"
-                            TicksPaint="#232323"
-                            TicksAtCenter="True"/>
-                    </lvc:AxesCollection>
-                </lvc:CartesianChart.XAxes>
-
-                <lvc:CartesianChart.YAxes>
-                    <lvc:AxesCollection>
-                        <lvc:XamlAxis
-                            NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=DFKai-SB}"
-                            TextSize="18"
-                            Labeler="{Binding YAxisLabeler}"
-                            LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=DFKai-SB}"
-                            SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                            SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
-                            SubseparatorsCount="9"
-                            ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
-                            TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
-                            SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                            MinLimit="0"/>
-                    </lvc:AxesCollection>
-                </lvc:CartesianChart.YAxes>
-            </lvc:CartesianChart>
-
-            <Grid Grid.Row="0" Grid.Column="1">
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
                 </Grid.RowDefinitions>
 
-                <!-- 自訂圖例 -->
-                <ItemsControl Grid.Row="0"
-                              ItemsSource="{Binding LegendItems}"
-                              VerticalAlignment="Center"
-                              Margin="0,0,15,0">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <ToggleButton IsChecked="{Binding IsVisible}"
-                                          Command="{Binding DataContext.ToggleSeries,
-                                RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                          CommandParameter="{Binding Name}"
-                                          Background="Transparent"
-                                          BorderThickness="0"
-                                          Cursor="Hand"
-                                          Margin="0,5">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="10" Height="10" Margin="0,0,5,0">
-                                        <Ellipse.Fill>
-                                            <SolidColorBrush Color="{Binding Color}"/>
-                                        </Ellipse.Fill>
-                                    </Ellipse>
-                                    <TextBlock Text="{Binding Name}"
-                                               Foreground="#FFA1A7CC"
-                                               FontFamily="DFKai-SB"
-                                               FontSize="20"
-                                               VerticalAlignment="Center"/>
-                                </StackPanel>
-                            </ToggleButton>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                <Button Grid.Row="1" Content="切換" Style="{StaticResource PrimaryButton}" Command="{Binding SwitchSheet}" Margin="0,0,17,15"/>
+                <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
+                                    x:Name="CardioChart"
+                                    Series="{Binding SelectRecord}"
+                                    Background="#FF3A3F54"
+                                    Margin="15,0,15,15"
+                                    DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
+                    <lvc:CartesianChart.Title>
+                        <lvc:XamlDrawnLabelVisual Text="{Binding SheetTitle}" TextSize="20" Padding="15">
+                            <lvc:XamlDrawnLabelVisual.Paint>
+                                <lvc:SolidColorPaint Color="#FFA1A7CC" FontFamily="Microsoft JhengHei"/>
+                            </lvc:XamlDrawnLabelVisual.Paint>
+                        </lvc:XamlDrawnLabelVisual>
+                    </lvc:CartesianChart.Title>
+
+                    <lvc:CartesianChart.XAxes>
+                        <lvc:AxesCollection>
+                            <lvc:XamlDateTimeAxis
+                                Interval="1.00:00:00"
+                                DateFormatter="{Binding Formatter}"
+                                LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"
+                                SeparatorsPaint="#c8c8c8"
+                                SeparatorsAtCenter="False"
+                                TicksPaint="#232323"
+                                TicksAtCenter="True"/>
+                        </lvc:AxesCollection>
+                    </lvc:CartesianChart.XAxes>
+
+                    <lvc:CartesianChart.YAxes>
+                        <lvc:AxesCollection>
+                            <lvc:XamlAxis
+                                NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=Microsoft JhengHei}"
+                                TextSize="18"
+                                Labeler="{Binding YAxisLabeler}"
+                                LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"
+                                SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
+                                SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
+                                SubseparatorsCount="9"
+                                ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
+                                TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
+                                SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
+                                MinLimit="0"/>
+                        </lvc:AxesCollection>
+                    </lvc:CartesianChart.YAxes>
+                </lvc:CartesianChart>
+
+                <Grid Grid.Row="0" Grid.Column="1">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 自訂圖例 -->
+                    <ItemsControl Grid.Row="0"
+                                  ItemsSource="{Binding LegendItems}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,15,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton IsChecked="{Binding IsVisible}"
+                                              Command="{Binding DataContext.ToggleSeries, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding Name}"
+                                              HorizontalAlignment="Left"
+                                              Background="Transparent"
+                                              BorderThickness="0"
+                                              Cursor="Hand"
+                                              Margin="0,5">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="10" Height="10" Margin="0,0,5,0">
+                                            <Ellipse.Fill>
+                                                <SolidColorBrush Color="{Binding Color}"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                        <TextBlock Text="{Binding Name}"
+                                                   Foreground="#FFA1A7CC"
+                                                   FontFamily="{StaticResource LINESeedTW_TTF_Rg}"
+                                                   FontSize="20"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Button Grid.Row="1" Content="時間/距離" Style="{StaticResource PrimaryButton}" Command="{Binding SwitchSheet}" Margin="0,0,15,15"/>
+                    <Button Grid.Row="2" Content="儲存圖表" Style="{StaticResource PrimaryButton}" Margin="0,0,15,15" Click="Button_Click"/>
+                </Grid>
+
+                <Rectangle Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource DividerLine}"/>
+
+                <Grid Grid.Row="2" Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0"  Text="各運動紀錄" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
+
+                    <DataGrid Grid.Row="1"
+                              ItemsSource="{Binding SelectSheetData}"
+                              Style="{StaticResource ModernDataGrid}"
+                              ColumnHeaderStyle="{StaticResource ModernHeader}"
+                              CellStyle="{StaticResource ModernCell}"
+                              RowStyle="{StaticResource ModernRow}"
+                              CanUserAddRows="False"
+                              CanUserReorderColumns="False"
+                              IsReadOnly="True"
+                              RowHeaderWidth="0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
+                            <DataGridTextColumn Header="總距離(km)" Width="*" Binding="{Binding DistanceKm}"/>
+                            <DataGridTextColumn Header="總時間(min)" Width="*" Binding="{Binding DurationMin}"/>
+                            <DataGridTextColumn Header="總次數" Width="*" Binding="{Binding Times}"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </Grid>
-
-            <Rectangle Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource DividerLine}"/>
-
-            <Grid Grid.Row="2" Grid.Column="0">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-
-                <TextBlock Grid.Row="0"  Text="各運動紀錄" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
-
-                <DataGrid Grid.Row="1"
-                          ItemsSource="{Binding SelectSheetData}"
-                          Style="{StaticResource ModernDataGrid}"
-                          ColumnHeaderStyle="{StaticResource ModernHeader}"
-                          CellStyle="{StaticResource ModernCell}"
-                          RowStyle="{StaticResource ModernRow}"
-                          CanUserAddRows="False"
-                          CanUserReorderColumns="False"
-                          IsReadOnly="True"
-                          RowHeaderWidth="0">
-                    <DataGrid.Columns>
-                        <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
-                        <DataGridTextColumn Header="總距離(km)" Width="*" Binding="{Binding DistanceKm}"/>
-                        <DataGridTextColumn Header="總次數" Width="*" Binding="{Binding Times}"/>
-                        <DataGridTextColumn Header="總時間(min)" Width="*" Binding="{Binding DurationMin}"/>
-                    </DataGrid.Columns>
-                </DataGrid>
-            </Grid>
-        </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

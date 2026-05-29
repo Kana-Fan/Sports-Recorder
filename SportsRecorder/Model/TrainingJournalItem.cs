@@ -61,7 +61,7 @@ namespace SportsRecorder.Model
             }
         }
 
-        private double _distanceKm = 0;// 運動距離
+        private double _distanceKm = 1;// 運動距離
         public double DistanceKm
         {
             get => _distanceKm;
@@ -122,7 +122,7 @@ namespace SportsRecorder.Model
             }
         }
 
-        private double _weightKg = 1; // 重量
+        private double _weightKg = 10; // 重量
         public double WeightKg
         {
             get => _weightKg;
