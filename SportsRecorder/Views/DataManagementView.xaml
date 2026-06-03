@@ -7,11 +7,7 @@
              xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
-    <UserControl.DataContext>
-        <vm:DataManagementViewModel/>
-    </UserControl.DataContext>
-
-    <Grid Background="#1A1D27">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -21,11 +17,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Image Source="/Assets/Icons/folder.png"
-                   Width="25" Height="25"
-                   Margin="5"
-                   VerticalAlignment="Center"
-                   RenderOptions.BitmapScalingMode="HighQuality"/>
+            <Image Source="{DynamicResource Data}" Style="{StaticResource TitleImageStyle}"/>
             <TextBlock Text="資料管理" Style="{StaticResource Title}" />
         </StackPanel>
 
@@ -39,11 +31,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <Image Source="/Assets/Icons/upload.png"
-                       Width="25" Height="25"
-                       Margin="20,5,5,5"
-                       VerticalAlignment="Center"
-                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                <Image Source="{DynamicResource Upload}" Style="{StaticResource TitleImageStyle}" Margin="20,5,5,5"/>
                 <TextBlock Text="匯入 (可匯入 Json 與 Excel )" Style="{StaticResource Subheading}" />
             </StackPanel>
 
@@ -64,11 +52,7 @@
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0" Orientation="Horizontal">
-                <Image Source="/Assets/Icons/download.png"
-               Width="25" Height="25"
-               Margin="20,5,5,5"
-               VerticalAlignment="Center"
-               RenderOptions.BitmapScalingMode="HighQuality"/>
+                <Image Source="{DynamicResource Download}" Style="{StaticResource TitleImageStyle}" Margin="20,5,5,5"/>
                 <TextBlock Text="匯出 (可匯出 Json 與 Excel )" Style="{StaticResource Subheading}" />
             </StackPanel>
 

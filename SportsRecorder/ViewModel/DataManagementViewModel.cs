@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SportsRecorder.Model;
+using SportsRecorder.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -32,7 +33,25 @@ namespace SportsRecorder.ViewModel
         public string FileName
         {
             get => _fileName;
-            set => SetProperty(ref _fileName, value);
+            set
+            {
+                _fileName = value;
+                HasFileName = _fileName != "請選擇檔案";
+                OnPropertyChanged(nameof(FileName));
+            }
+        }
+
+        private bool _hasFileName;
+        public bool HasFileName
+        {
+            get => _hasFileName;
+            set
+            {
+                _hasFileName = value;
+                OnPropertyChanged(nameof(HasFileName));
+
+                CommandManager.InvalidateRequerySuggested();
+            }
         }
 
         // Commands
@@ -63,7 +82,7 @@ namespace SportsRecorder.ViewModel
                 }
             });
 
-            UpLoadFileCommand = new RelayCommand(ExecuteUploadFile);
+            UpLoadFileCommand = new RelayCommand(execute: ExecuteUploadFile, canExecute: () => HasFileName);
 
             DownLoadFileCommand = new RelayCommand(ExecuteDownloadFile);
         }
@@ -447,7 +466,7 @@ namespace SportsRecorder.ViewModel
             try
             {
                 var val = (int)cell.GetDouble();
-                if (val < 0)
+                if (val <= 0)
                     throw new InvalidDataException($"[{sheet}] 第 {row} 行 '{col}' 不可為負數：{val}");
                 return val;
             }

@@ -1,5 +1,6 @@
 ﻿
 using SportsRecorder.Model;
+using SportsRecorder.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,35 +9,32 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 
 namespace SportsRecorder.ViewModel
 {
     public class MainViewModel : BaseViewModel
     {
         private readonly IDialogService _dialogService;
+
+        private ObservableCollection<NavigationItem> _navItems;
+        public ObservableCollection<NavigationItem> NavItems
+        {
+            get => _navItems;
+            set
+            {
+                _navItems = value;
+                OnPropertyChanged(nameof(NavItems));
+            }
+        }
+
         private BaseViewModel _currentPage; // 目前選的頁面 類似tag
-        private NavigationItem _selectedItem; // 暫時沒用到可以拿掉 可以用來控制選單項目的啟用狀態
-
-        public ObservableCollection<NavigationItem> NavItems { get; }
-
         public BaseViewModel CurrentPage
         {
             get => _currentPage;
             set => SetProperty(ref _currentPage, value);
-        }
-
-        public NavigationItem SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                if (SetProperty(ref _selectedItem, value))
-                {
-                    NavigateTo(value.Key);
-                }
-
-            }
         }
 
         public ICommand NavigateCommand { get; }
@@ -44,25 +42,27 @@ namespace SportsRecorder.ViewModel
         public MainViewModel()
         {
             _dialogService = new DialogService();
-            NavigateCommand = new NavRelayCommand(p => NavigateTo(p as string));
+
             NavItems = BuildNavItems();
             CurrentPage = new TrainingJournalViewModel();
+
+            NavigateCommand = new NavRelayCommand(p => NavigateTo(p as string));
         }
 
-        private ObservableCollection<NavigationItem> BuildNavItems() => new()
+        public ObservableCollection<NavigationItem> BuildNavItems() => new()
         {
-            new() { Title = "訓練日誌", Key = "journal", IconPath = "/Assets/Icons/contract_edit.png"},
-            new() { Title = "運動類型", Key = "exercise", IconPath = "/Assets/Icons/database.png", Children = new()
+            new() { Title = "訓練日誌", Key = "journal", IconKey = "Journal"},
+            new() { Title = "運動類型", Key = "exercise", IconKey = "Exercise", Children = new()
             {
-                new() { Title = "有氧", Key = "cardio", IconPath = "/Assets/Icons/vo2_max.png" },
-                new() { Title = "重訓", Key = "strength", IconPath = "/Assets/Icons/fitness.png" },
+                new() { Title = "有氧", Key = "cardio", IconKey = "Cardio" },
+                new() { Title = "重訓", Key = "strength", IconKey = "Strength" },
             }},
-            new() { Title = "統計圖表", Key = "stats", IconPath = "/Assets/Icons/bar_chart.png", Children = new()
+            new() { Title = "統計圖表", Key = "stats", IconKey = "Stats", Children = new()
             {
-                new() { Title = "有氧", Key = "stats-cardio", IconPath = "/Assets/Icons/vo2_max.png" },
-                new() { Title = "重訓", Key = "stats-strength", IconPath = "/Assets/Icons/fitness.png" },
+                new() { Title = "有氧", Key = "stats-cardio", IconKey = "Cardio" },
+                new() { Title = "重訓", Key = "stats-strength", IconKey = "Strength" },
             }},
-            new() { Title = "資料管理", Key = "data", IconPath = "/Assets/Icons/folder.png"},
+            new() { Title = "資料管理", Key = "data", IconKey = "Data"},
         };
 
         // 切換內容
@@ -72,7 +72,6 @@ namespace SportsRecorder.ViewModel
             {
                 _dialogService.ShowMessage("有未儲存的變更，請儲存後再切換頁面");
             }
-
             else
             {
                 CurrentPage = key switch
@@ -86,6 +85,11 @@ namespace SportsRecorder.ViewModel
                     _ => CurrentPage
                 };
             }
+        }
+
+        public override bool CheckHasChanged()
+        {
+            return CurrentPage.CheckHasChanged();
         }
     }
 }

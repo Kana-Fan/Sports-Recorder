@@ -8,10 +8,9 @@
              xmlns:s="clr-namespace:SportsRecorder"
              mc:Ignorable="d"
              d:DesignHeight="500" d:DesignWidth="800">
-
     <UserControl.Resources>
         <s:BodyPartToNamesConverter x:Key="BodyPartToNamesConverter"/>
-        
+
         <!-- 有氧表格 -->
         <DataTemplate x:Key="CardioTemplate">
             <DataGrid ItemsSource="{Binding Cardios, Mode=TwoWay}"
@@ -125,21 +124,17 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid Background="#1A1D27">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="*" />
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Image Source="/Assets/Icons/contract_edit.png"
-            Width="25" Height="25"
-            Margin="5"
-            VerticalAlignment="Center"
-            RenderOptions.BitmapScalingMode="HighQuality"/>
+            <Image Source="{DynamicResource Journal}" Style="{StaticResource TitleImageStyle}"/>
             <TextBlock Text="訓練日誌" Style="{StaticResource Title}" />
         </StackPanel>
 
@@ -221,6 +216,13 @@
                             </Style>
                         </ContentControl.Style>
                     </ContentControl>
+
+                    <!-- 空內容提示文字 -->
+                    <Border Background="{DynamicResource BackgroundColor}"
+                            Visibility="{Binding IsDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="今天還沒有記錄喔~"
+                                   Style="{StaticResource Hint}"/>
+                    </Border>
                 </Grid>
             </ScrollViewer>
 

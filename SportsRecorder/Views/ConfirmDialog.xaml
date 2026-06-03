@@ -11,8 +11,8 @@
         AllowsTransparency="True"
         Background="Transparent"
         Height="200" Width="400">
-    <Border Background="#1E1E2E" CornerRadius="12"
-            BorderBrush="#44475A" BorderThickness="1">
+    <Border Background="{DynamicResource BackgroundColor}" CornerRadius="12"
+            BorderBrush="{DynamicResource TextColor}" BorderThickness="1">
         <StackPanel Margin="24" VerticalAlignment="Center">
             <TextBlock Text="QAQ" Style="{StaticResource Title}" HorizontalAlignment="Center" />
 

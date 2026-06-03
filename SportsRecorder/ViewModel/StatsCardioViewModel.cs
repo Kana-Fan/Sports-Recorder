@@ -7,14 +7,17 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.VisualElements;
+using LiveChartsCore.SkiaSharpView.WPF;
 using SkiaSharp;
 using SportsRecorder.Model;
+using SportsRecorder.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
@@ -66,7 +69,12 @@ namespace SportsRecorder.ViewModel
         public ISeries[] SelectRecord
         {
             get => _selectRecord;
-            set => SetProperty(ref _selectRecord, value);
+            set
+            {
+                _selectRecord = value;
+                OnPropertyChanged(nameof(SelectRecord));
+                OnPropertyChanged(nameof(IsDataEmpty));
+            }
         }
 
         // 區間內的總運動類型(表格用)
@@ -152,6 +160,15 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        // 判斷集合是否為空或數量為 0
+        public bool IsDataEmpty
+        {
+            get
+            {
+                return _lastCardioRecords.Count() == 0;
+            }
+        }
+
         // Commands
         public ICommand SwitchSheet { get; }
 
@@ -218,7 +235,14 @@ namespace SportsRecorder.ViewModel
         // 獲取期間內的有氧運動資料與總運動時間
         private void GetData()
         {
-            //  篩選區間內的紀錄
+            SheetTitle = _sheetIsTime ? "每日運動總時間" : "每日運動總距離";
+
+            YAxisLabeler = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
+
+            // 期間內的有氧運動總時間
+            TotalTxt = _sheetIsTime ? "總運動時間" : "總運動距離(km)";
+
+            // 篩選區間內的紀錄
             var cardioRecords =
                 Records
                 .Where(r =>
@@ -228,18 +252,16 @@ namespace SportsRecorder.ViewModel
 
             _lastCardioRecords = cardioRecords;
 
+            if (cardioRecords.Count == 0)
+            {
+                _dialogService.ShowMessage("還沒有運動紀錄喔~ 快去運動吧");
+            }
+
             // 區間內的資料（直方圖用：日期 + 各運動時間or 各運動距離)
             UpdateBarChart(cardioRecords);
 
             // 區間內的總運動類型（表格用：同名有氧合併加總）
             UpdateSheet(cardioRecords);
-
-            SheetTitle = _sheetIsTime ? "每日運動總時間" : "每日運動總距離";
-
-            YAxisLabeler = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
-
-            // 期間內的有氧運動總時間
-            TotalTxt = _sheetIsTime ? "總運動時間" : "總運動距離(km)";
         }
 
         private void UpdateBarChart(List<TrainingJournalItem> cardioRecords)

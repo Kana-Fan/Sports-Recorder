@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using SportsRecorder.Model;
+using SportsRecorder.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,6 +31,7 @@ namespace SportsRecorder.ViewModel
             {
                 _strengthTypes = value;
                 OnPropertyChanged(nameof(StrengthTypes));
+                OnPropertyChanged(nameof(IsDataEmpty));
             }
         }
 
@@ -57,6 +59,15 @@ namespace SportsRecorder.ViewModel
 
                 // 通知 WPF 重新檢查 SaveCommand 的狀態
                 CommandManager.InvalidateRequerySuggested();
+            }
+        }
+
+        // 判斷集合是否為空或數量為 0
+        public bool IsDataEmpty
+        {
+            get
+            {
+                return StrengthTypes.Count() == 0;
             }
         }
 
@@ -91,6 +102,7 @@ namespace SportsRecorder.ViewModel
             {
                 StrengthTypes.Insert(0, new StrengthItem { BodyPart = SearchText, Name = "" });
                 UpdateDirtyState();
+                OnPropertyChanged(nameof(IsDataEmpty));
             });
 
             DeleteEntryCommand = new RelayCommand<StrengthItem>(entry =>
@@ -99,6 +111,7 @@ namespace SportsRecorder.ViewModel
                 {
                     StrengthTypes.Remove(entry);
                     UpdateDirtyState();
+                    OnPropertyChanged(nameof(IsDataEmpty));
                 }
             });
 

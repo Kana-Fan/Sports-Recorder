@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Wordprocessing;
 using SportsRecorder.Model;
+using SportsRecorder.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,7 +21,6 @@ namespace SportsRecorder.ViewModel
         private static readonly string FileName = "records.json";
 
         // 全部的資料
-
         private ObservableCollection<TrainingJournalItem> _records;
         public ObservableCollection<TrainingJournalItem> Records
         {
@@ -86,6 +87,7 @@ namespace SportsRecorder.ViewModel
             {
                 _currentLog = value;
                 OnPropertyChanged(nameof(CurrentLog));
+                OnPropertyChanged(nameof(IsDataEmpty));
             }
         }
 
@@ -126,6 +128,16 @@ namespace SportsRecorder.ViewModel
         {
             get => _cardiosTotalDuration;
             set => SetProperty(ref _cardiosTotalDuration, value);
+        }
+
+        // 判斷集合是否為空或數量為 0
+        public bool IsDataEmpty
+        {
+            get
+            {
+                return SelectedType == ExerciseType.Cardio ?
+                    CurrentLog.Cardios.Count() == 0 : CurrentLog.Strengths.Count() == 0;
+            }
         }
 
         // Commands
@@ -171,6 +183,7 @@ namespace SportsRecorder.ViewModel
                 }
 
                 UpdateDirtyState();
+                OnPropertyChanged(nameof(IsDataEmpty));
             });
 
             DeleteEntryCommand = new RelayCommand<ExerciseEntryBase>(entry =>
@@ -194,6 +207,7 @@ namespace SportsRecorder.ViewModel
                     }
 
                     UpdateDirtyState();
+                    OnPropertyChanged(nameof(IsDataEmpty));
                 }
             });
 
@@ -257,6 +271,7 @@ namespace SportsRecorder.ViewModel
             {
                 log = new TrainingJournalItem { Date = date };
                 Records.Add(log);
+                HasChange = false;
             }
 
             CurrentLog = log;

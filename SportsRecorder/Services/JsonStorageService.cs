@@ -11,7 +11,7 @@ using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 
-namespace SportsRecorder.ViewModel
+namespace SportsRecorder.Services
 {
     public static class JsonStorageService
     {

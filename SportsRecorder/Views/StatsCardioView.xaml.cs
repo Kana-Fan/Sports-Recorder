@@ -13,8 +13,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Wpf.Ui.Controls;
 using Microsoft.Win32;
+using SportsRecorder.Services;
 
 namespace SportsRecorder.Views
 {
@@ -75,6 +75,16 @@ namespace SportsRecorder.Views
 
                 _dialogService.ShowMessage("圖表儲存成功");
             }
+        }
+
+        private void mousewheel(object sender, MouseWheelEventArgs e)
+        {
+            // 呼叫 ScrollViewer 的「MouseWheel」事件
+            var args = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta);
+
+            args.RoutedEvent = ScrollViewer.MouseWheelEvent;
+
+            scroll_viewer.RaiseEvent(args);
         }
     }
 }

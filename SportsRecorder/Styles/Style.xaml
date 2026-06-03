@@ -1,19 +1,46 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <FontFamily x:Key="LINESeedTW_TTF_Rg">/Assets/Fonts/#LINE Seed TW_TTF Regular</FontFamily>
 
+    <!--圖-->
+    <Style TargetType="lvc:CartesianChart">
+        <Setter Property="Background" Value="{DynamicResource ChartBackgroundColor}"/>
+        <Setter Property="Margin" Value="15,0,15,15"/>
+    </Style>
+
+    <!--圖像-->
+    <Style x:Key="ImageStyle" TargetType="Image">
+        <Setter Property="Width" Value="20"/>
+        <Setter Property="Height" Value="20"/>
+        <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="MenuImageStyle" TargetType="Image" BasedOn="{StaticResource ImageStyle}">
+        <Setter Property="Margin" Value="7,0,10,0"/>
+    </Style>
+
+    <Style x:Key="TitleImageStyle" TargetType="Image" BasedOn="{StaticResource ImageStyle}">
+        <Setter Property="Width" Value="25"/>
+        <Setter Property="Height" Value="25"/>
+        <Setter Property="Margin" Value="5"/>
+    </Style>
+
     <!-- TreeView 樣式：移除邊距與邊框-->
-    <Style TargetType="TreeView">
-        <Setter Property="Background" Value="#1A1D27" />
+    <Style x:Key="TreeView" TargetType="TreeView">
+        <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
         <Setter Property="Padding" Value="0,8,0,8"/>
         <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <!-- TreeViewItem 樣式 -->
-    <Style TargetType="TreeViewItem">
+    <Style x:Key="TreeViewItem" TargetType="TreeViewItem">
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Margin" Value="0"/>
         <Setter Property="BorderThickness" Value="0"/>
@@ -33,14 +60,13 @@
                             <!-- 左側指示條 -->
                             <Rectangle x:Name="SelectionBar"
                                    Grid.Column="0"
-                                   Fill="#6C63FF"
+                                   Fill="#FF006BFB"
                                    RadiusX="2" RadiusY="2"
-                                   Opacity="0"/>
+                                   Opacity="0" Height="20"/>
 
                             <!-- 懸停/選取背景 -->
                             <Border x:Name="HoverBg"
-                                Grid.Column="0"
-                                Grid.ColumnSpan="2"
+                                Grid.Column="1"
                                 Background="Transparent"
                                 CornerRadius="0,6,6,0"
                                 Margin="0,2,8,2"/>
@@ -54,12 +80,13 @@
                                               ContentSource="Header"
                                               VerticalAlignment="Center"
                                               Margin="5,0,10,0"/>
+
                                 <!-- 展開箭頭 -->
                                 <TextBlock x:Name="ExpandArrow"
                                        Text="›"
                                        FontSize="18"
                                        FontFamily="Segoe UI"
-                                       Foreground="#FF7E83A7"
+                                       Foreground="{DynamicResource TextColor}"
                                        VerticalAlignment="Center"
                                        Width="18"
                                        TextAlignment="Center"
@@ -110,15 +137,15 @@
 
                         <!-- 懸停 -->
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="HoverBg" Property="Background" Value="#22253A"/>
                             <Setter TargetName="SelectionBar" Property="Opacity" Value="0.4"/>
+                            <Setter TargetName="HoverBg" Property="Background" Value="{DynamicResource MouseOverBackgroundColor}"/>
                         </Trigger>
 
                         <!-- 選取 -->
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="HoverBg" Property="Background" Value="#252836"/>
                             <Setter TargetName="SelectionBar" Property="Opacity" Value="1"/>
-                            <Setter Property="Foreground" Value="#FFFFFF"/>
+                            <Setter TargetName="HoverBg" Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource SelectedTextColor}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -126,9 +153,10 @@
         </Setter>
     </Style>
 
+    <!--文字樣式-->
     <Style x:Key="Txt" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource  LINESeedTW_TTF_Rg}"/>
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="Margin" Value="10" />
     </Style>
 
@@ -141,18 +169,15 @@
         <Setter Property="FontSize" Value="20" />
     </Style>
 
-    <Style x:Key="Contents" TargetType="TextBox">
-        <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderBrush" Value="#FF484E67"/>
-        <Setter Property="Margin" Value="10" />
-        <Setter Property="FontSize" Value="25" />
-        <Style.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#FF484E67"/>
-            </Trigger>
-        </Style.Triggers>
+    <Style x:Key="Hint" TargetType="TextBlock" BasedOn="{StaticResource Subheading}">
+        <Setter Property="Foreground" Value="{DynamicResource HintTextColor}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="ItemsTxt" TargetType="TextBlock" BasedOn="{StaticResource Subheading}">
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Margin" Value="0" />
     </Style>
 
     <Style x:Key="SearchTextBox" TargetType="TextBox">
@@ -160,7 +185,7 @@
         <Setter Property="Height" Value="40"/>
         <Setter Property="FontSize" Value="20" />
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="CaretBrush" Value="#FF484E67"/>
         <Setter Property="Template" >
             <Setter.Value>
@@ -177,10 +202,9 @@
                                 </Grid.ColumnDefinitions>
 
                                 <Image Grid.Column="0"
-                                       Source="/Assets/Icons/search.png"
-                                       Width="25" Height="25"
-                                       Margin="5"
-                                       RenderOptions.BitmapScalingMode="HighQuality"/>
+                                      Style="{StaticResource ImageStyle}"
+                                      Margin="5"
+                                      Source="{DynamicResource Search}"/>
                                 <ScrollViewer Grid.Column="1"
                                               x:Name="PART_ContentHost"
                                               HorizontalAlignment="Left"
@@ -205,7 +229,7 @@
 
     <!-- 日期選擇 -->
     <Style x:Key="CustomDatePicker" TargetType="DatePicker">
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
         <Setter Property="FontSize" Value="20"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
@@ -227,7 +251,7 @@
                             <DatePickerTextBox
                                 x:Name="PART_TextBox"
                                 Grid.Column="0"
-                                Foreground="#FFA1A7CC"
+                                Foreground="{DynamicResource TextColor}"
                                 Focusable="{TemplateBinding Focusable}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
@@ -282,7 +306,7 @@
                                 <!-- 自訂圖示：使用 Path 畫日曆 -->
                                 <Path Width="16" Height="16"
                                       Stretch="Uniform"
-                                      Fill="#FFA1A7CC"
+                                      Fill="{DynamicResource TextColor}"
                                       Data="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14
                                             c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z
                                             m0 16H5V10h14v10zm0-12H5V6h14v2z
@@ -308,7 +332,7 @@
         <Setter Property="Width" Value="0"/>
         <Setter Property="Visibility" Value="Collapsed"/>
     </Style>
-    
+
     <Style x:Key="ModernDataGrid" TargetType="DataGrid">
         <Setter Property="AutoGenerateColumns" Value="False"/>
         <Setter Property="RowHeight" Value="50"/>
@@ -318,14 +342,14 @@
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Margin" Value="10" />
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="AlternatingRowBackground" Value="#FF3A3F54"/>
+        <Setter Property="AlternatingRowBackground" Value="{DynamicResource SheetBackgroundColor}"/>
         <Setter Property="GridLinesVisibility" Value="Horizontal"/>
     </Style>
 
     <!-- 標題 -->
     <Style x:Key="ModernHeader" TargetType="DataGridColumnHeader">
-        <Setter Property="Background" Value="#FF3A3F54"/>
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Background" Value="{DynamicResource SheetBackgroundColor}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="BorderBrush" Value="Black"/>
@@ -358,8 +382,8 @@
 
     <!--表格Row-->
     <Style x:Key="ModernRow" TargetType="DataGridRow">
-        <Setter Property="Background" Value="#FF484E67"/>
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
+        <Setter Property="Background" Value="{DynamicResource RowBackgroundColor}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Style.Triggers>
             <!-- 滑鼠移過時的背景色 -->
             <Trigger Property="IsMouseOver" Value="True">
@@ -375,8 +399,8 @@
 
     <!--按鈕-->
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="Foreground" Value="#FFA1A7CC"/>
-        <Setter Property="Background" Value="#FF3A3F54"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
+        <Setter Property="Background" Value="{DynamicResource ButtonBackgroundColor}"/>
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
@@ -388,7 +412,9 @@
                 <ControlTemplate TargetType="Button">
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="8">
+                            CornerRadius="8"
+                            BorderBrush="Gray"
+                            BorderThickness="1">
                         <ContentPresenter
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
@@ -421,10 +447,18 @@
         </Setter>
     </Style>
 
+    <Style x:Key="MenuButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="Margin" Value="10" />
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="HorizontalAlignment" Value="Left" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
     <!--ComboBox-->
     <Style x:Key="DarkComboBoxStyleBase" TargetType="ComboBox">
-        <Setter Property="Background" Value="#1A1D27"/>
-        <Setter Property="Foreground" Value="#A1A7CC"/>
+        <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="BorderBrush" Value="#FF7A7C8C"/>
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
         <Setter Property="BorderThickness" Value="2"/>
@@ -486,7 +520,7 @@
                             AllowsTransparency="True"
                             Focusable="False">
                             <Border
-                                Background="#1A1D27"
+                                Background="{DynamicResource BackgroundColor}"
                                 BorderBrush="#3A3F5C"
                                 BorderThickness="1"
                                 CornerRadius="4"
@@ -505,7 +539,7 @@
         <Setter Property="ItemContainerStyle">
             <Setter.Value>
                 <Style TargetType="ComboBoxItem">
-                    <Setter Property="Foreground" Value="#A1A7CC"/>
+                    <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
                     <Setter Property="Background" Value="Transparent"/>
                     <Setter Property="Padding" Value="8,6"/>
                     <Style.Triggers>
@@ -528,10 +562,11 @@
         <Setter Property="FontSize" Value="20"/>
     </Style>
 
+    <!--分隔線-->
     <Style x:Key="DividerLine" TargetType="Rectangle">
         <Setter Property="Margin" Value="10,5,10,5"/>
         <Setter Property="Height" Value="1"/>
-        <Setter Property="Fill" Value="#FF7A7C8C"/>
+        <Setter Property="Fill" Value="{DynamicResource LineFill}"/>
     </Style>
 
     <Style x:Key="TitleDividerLine" TargetType="Rectangle" BasedOn="{StaticResource DividerLine}">
@@ -555,10 +590,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#2E3A4A"/>
+                            <Setter Property="Background" Value="#FF9D9D9D"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="#3A4A5A"/>
+                            <Setter Property="Background" Value="#FF9D9D9D"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -587,7 +622,7 @@
                 <ControlTemplate TargetType="Thumb">
                     <!-- Border Background => thumb顏色 -->
                     <Border x:Name="ThumbBorder"
-                            Background="#4A5568"
+                            Background="#FF9D9D9D"
                             CornerRadius="3"
                             Margin="4,0"/>
                     <ControlTemplate.Triggers>

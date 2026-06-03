@@ -11,8 +11,8 @@
         AllowsTransparency="True"
         Background="Transparent"
         SizeToContent="WidthAndHeight">
-    <Border Background="#1E1E2E" CornerRadius="12"
-        BorderBrush="#FF959AB7" BorderThickness="1">
+    <Border Background="{DynamicResource BackgroundColor}" CornerRadius="12"
+        BorderBrush="{DynamicResource TextColor}" BorderThickness="1">
         <StackPanel Margin="24" VerticalAlignment="Center">
             <TextBlock Text="╰（￣▽￣）╭" Style="{StaticResource Title}" HorizontalAlignment="Center" />
 

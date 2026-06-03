@@ -7,20 +7,14 @@
              xmlns:local="clr-namespace:SportsRecorder.Views"
              xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             xmlns:services="clr-namespace:SportsRecorder.Services"
              mc:Ignorable="d"
              d:DesignHeight="1000" d:DesignWidth="800">
     <UserControl.DataContext>
         <vm:StatsCardioViewModel/>
     </UserControl.DataContext>
 
-    <UserControl.Resources>
-        <sys:String x:Key="gray">#c3c3c3</sys:String>
-        <sys:String x:Key="gray1">#a0a0a0</sys:String>
-        <sys:String x:Key="gray2">#5a5a5a</sys:String>
-        <sys:String x:Key="gray3">#3c3c3c</sys:String>
-    </UserControl.Resources>
-
-    <Grid Name="ChartContainer" Background="#1A1D27">
+    <Grid Name="ChartContainer">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -28,17 +22,9 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Image Source="/Assets/Icons/bar_chart.png"
-                   Width="25" Height="25"
-                   Margin="5"
-                   VerticalAlignment="Center"
-                   RenderOptions.BitmapScalingMode="HighQuality"/>
+            <Image Source="{DynamicResource Stats}" Style="{StaticResource TitleImageStyle}"/>
             <TextBlock Text="統計圖表 - 有氧運動" Style="{StaticResource Title}" />
-            <Image Source="/Assets/Icons/vo2_max.png"
-                   Width="25" Height="25"
-                   Margin="5"
-                   VerticalAlignment="Center"
-                   RenderOptions.BitmapScalingMode="HighQuality"/>
+            <Image Source="{DynamicResource Cardio}" Style="{StaticResource TitleImageStyle}"/>
         </StackPanel>
 
         <Grid Grid.Row="1">
@@ -51,7 +37,7 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="40"/>
                 <ColumnDefinition />
@@ -67,23 +53,20 @@
             <DatePicker Grid.Row="2" Grid.Column="2" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
             <TextBlock Grid.Row="2" Grid.Column="4" Style="{StaticResource Subheading}" Text="{Binding TotalData}"/>
 
-            <Button Grid.Row="2" Grid.Column="1"
+            <Button Grid.Row="2" Grid.Column="3"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
                     Margin="10"
                     Width="20" Height="20"
-                    Panel.ZIndex="10"
+                    Background="Transparent"
                     Command="{Binding Refresh}"
                     Style="{StaticResource PrimaryButton}">
-                <Image Source="/Assets/Icons/refresh.png"
-                       Width="20" Height="20"
-                       RenderOptions.BitmapScalingMode="HighQuality"
-                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Image Style="{StaticResource ImageStyle}" Source="{DynamicResource Refresh}"/>
             </Button>
 
             <Rectangle Grid.Row="3" Grid.ColumnSpan="5" Style="{StaticResource DividerLine}"/>
         </Grid>
 
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer x:Name="scroll_viewer" Grid.Row="2" VerticalScrollBarVisibility="Auto">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
@@ -99,13 +82,11 @@
                 <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
                                     x:Name="CardioChart"
                                     Series="{Binding SelectRecord}"
-                                    Background="#FF3A3F54"
-                                    Margin="15,0,15,15"
                                     DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
                     <lvc:CartesianChart.Title>
                         <lvc:XamlDrawnLabelVisual Text="{Binding SheetTitle}" TextSize="20" Padding="15">
                             <lvc:XamlDrawnLabelVisual.Paint>
-                                <lvc:SolidColorPaint Color="#FFA1A7CC" FontFamily="Microsoft JhengHei"/>
+                                <lvc:SolidColorPaint Color="{StaticResource gray4}" FontFamily="Microsoft JhengHei"/>
                             </lvc:XamlDrawnLabelVisual.Paint>
                         </lvc:XamlDrawnLabelVisual>
                     </lvc:CartesianChart.Title>
@@ -170,10 +151,7 @@
                                             </Ellipse.Fill>
                                         </Ellipse>
                                         <TextBlock Text="{Binding Name}"
-                                                   Foreground="#FFA1A7CC"
-                                                   FontFamily="{StaticResource LINESeedTW_TTF_Rg}"
-                                                   FontSize="20"
-                                                   VerticalAlignment="Center"/>
+                                                   Style="{StaticResource ItemsTxt}"/>
                                     </StackPanel>
                                 </ToggleButton>
                             </DataTemplate>
@@ -203,7 +181,8 @@
                               CanUserAddRows="False"
                               CanUserReorderColumns="False"
                               IsReadOnly="True"
-                              RowHeaderWidth="0">
+                              RowHeaderWidth="0"
+                              PreviewMouseWheel="mousewheel">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
                             <DataGridTextColumn Header="總距離(km)" Width="*" Binding="{Binding DistanceKm}"/>
@@ -212,6 +191,15 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
+
+                <!-- 空內容提示文字 -->
+                <Border Grid.RowSpan="3"
+                        Grid.ColumnSpan="2"
+                        Background="{DynamicResource BackgroundColor}"
+                        Visibility="{Binding IsDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <TextBlock Text="目前無資料"
+                               Style="{StaticResource Hint}"/>
+                </Border>
             </Grid>
         </ScrollViewer>
     </Grid>

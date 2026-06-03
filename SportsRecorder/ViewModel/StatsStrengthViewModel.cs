@@ -13,6 +13,7 @@ using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using SportsRecorder.Model;
+using SportsRecorder.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -105,7 +106,12 @@ namespace SportsRecorder.ViewModel
         public ISeries[] SelectRecord
         {
             get => _selectRecord;
-            set => SetProperty(ref _selectRecord, value);
+            set
+            {
+                _selectRecord = value;
+                OnPropertyChanged(nameof(SelectRecord));
+                OnPropertyChanged(nameof(IsDataEmpty));
+            }
         }
 
         // 用來表示各運動的重量變化
@@ -113,7 +119,12 @@ namespace SportsRecorder.ViewModel
         public ISeries[] LineChartData
         {
             get => _lineChartData;
-            set => SetProperty(ref _lineChartData, value);
+            set
+            {
+                _lineChartData = value;
+                OnPropertyChanged(nameof(LineChartData));
+                OnPropertyChanged(nameof(IsLineChartEmpty));
+            }
         }
 
         private string _lineChartTitle = string.Empty;
@@ -178,6 +189,23 @@ namespace SportsRecorder.ViewModel
                 }
 
                 GetData();
+            }
+        }
+
+        // 判斷集合是否為空或數量為 0
+        public bool IsDataEmpty
+        {
+            get
+            {
+                return _lastStrengthRecords.Count() == 0;
+            }
+        }
+
+        public bool IsLineChartEmpty
+        {
+            get
+            {
+                return LineChartData.Count() == 0;
             }
         }
 
@@ -311,6 +339,11 @@ namespace SportsRecorder.ViewModel
             // 每天各部位的總重量（直方圖用）
             _bodyPartVisibleSeries.Clear();
             UpdateBarChart(allBodyParts);
+
+            if (strengthRecords.Count == 0)
+            {
+                _dialogService.ShowMessage("還沒有重訓紀錄喔~ 快去訓練吧");
+            }
         }
 
         private void ClearLinechart()
@@ -498,7 +531,6 @@ namespace SportsRecorder.ViewModel
         }
 
         public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MM/dd");
-
         public Func<double, string> YAxisLabeler { get; set; } = value => $"{value:N0} kg";
         public Func<double, string> LineYAxisLabeler { get; set; } = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
     }

@@ -5,8 +5,11 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Style.xaml"/>
+                <!-- 預設主題 -->
+                <ResourceDictionary Source="Styles/DarkStyle.xaml" />
+                <ResourceDictionary Source="Styles/Style.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

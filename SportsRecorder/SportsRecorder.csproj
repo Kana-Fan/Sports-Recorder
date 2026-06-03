@@ -10,18 +10,32 @@
 
   <ItemGroup>
     <None Remove="Assets\Fonts\LINESeedTW_TTF_Rg.ttf" />
-    <None Remove="Assets\Icons\bar_chart.png" />
-    <None Remove="Assets\Icons\contract_edit.png" />
-    <None Remove="Assets\Icons\database.png" />
-    <None Remove="Assets\Icons\download.png" />
-    <None Remove="Assets\Icons\fitness.png" />
+    <None Remove="Assets\Icons\DarkMode\bar_chart.png" />
+    <None Remove="Assets\Icons\DarkMode\contract_edit.png" />
+    <None Remove="Assets\Icons\DarkMode\database.png" />
+    <None Remove="Assets\Icons\DarkMode\date.png" />
+    <None Remove="Assets\Icons\DarkMode\download.png" />
+    <None Remove="Assets\Icons\DarkMode\fitness.png" />
+    <None Remove="Assets\Icons\DarkMode\folder.png" />
+    <None Remove="Assets\Icons\DarkMode\menu.png" />
+    <None Remove="Assets\Icons\DarkMode\refresh.png" />
+    <None Remove="Assets\Icons\DarkMode\search.png" />
+    <None Remove="Assets\Icons\DarkMode\upload.png" />
+    <None Remove="Assets\Icons\DarkMode\vo2_max.png" />
+    <None Remove="Assets\Icons\dark_mode.png" />
     <None Remove="Assets\Icons\fitness_121040.ico" />
-    <None Remove="Assets\Icons\folder.png" />
-    <None Remove="Assets\Icons\menu.png" />
-    <None Remove="Assets\Icons\refresh.png" />
-    <None Remove="Assets\Icons\search.png" />
-    <None Remove="Assets\Icons\upload.png" />
-    <None Remove="Assets\Icons\vo2_max.png" />
+    <None Remove="Assets\Icons\LightMode\bar_chart.png" />
+    <None Remove="Assets\Icons\LightMode\contract_edit.png" />
+    <None Remove="Assets\Icons\LightMode\database.png" />
+    <None Remove="Assets\Icons\LightMode\date.png" />
+    <None Remove="Assets\Icons\LightMode\download.png" />
+    <None Remove="Assets\Icons\LightMode\folder.png" />
+    <None Remove="Assets\Icons\LightMode\menu.png" />
+    <None Remove="Assets\Icons\LightMode\refresh.png" />
+    <None Remove="Assets\Icons\LightMode\search.png" />
+    <None Remove="Assets\Icons\LightMode\upload.png" />
+    <None Remove="Assets\Icons\LightMode\vo2_max.png" />
+    <None Remove="Assets\Icons\light_mode.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,27 +44,44 @@
     <PackageReference Include="LiveChartsCore.SkiaSharpView.WPF" Version="2.0.2" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" />
     <PackageReference Include="TitlebarAdaptive.WPF" Version="1.0.0" />
-    <PackageReference Include="WPF-UI" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <Resource Include="Assets\Fonts\LINESeedTW_TTF_Rg.ttf" />
-    <Resource Include="Assets\Icons\bar_chart.png" />
-    <Resource Include="Assets\Icons\contract_edit.png" />
-    <Resource Include="Assets\Icons\database.png" />
-    <Resource Include="Assets\Icons\download.png" />
-    <Resource Include="Assets\Icons\fitness.png" />
+    <Resource Include="Assets\Icons\DarkMode\bar_chart.png" />
+    <Resource Include="Assets\Icons\DarkMode\contract_edit.png" />
+    <Resource Include="Assets\Icons\DarkMode\date.png" />
+    <Resource Include="Assets\Icons\DarkMode\download.png" />
+    <Resource Include="Assets\Icons\DarkMode\fitness.png" />
+    <Resource Include="Assets\Icons\DarkMode\folder.png" />
+    <Resource Include="Assets\Icons\DarkMode\menu.png" />
+    <Resource Include="Assets\Icons\DarkMode\refresh.png" />
+    <Resource Include="Assets\Icons\DarkMode\search.png" />
+    <Resource Include="Assets\Icons\DarkMode\upload.png" />
+    <Resource Include="Assets\Icons\DarkMode\vo2_max.png" />
+    <Resource Include="Assets\Icons\LightMode\bar_chart.png" />
+    <Resource Include="Assets\Icons\LightMode\contract_edit.png" />
+    <Resource Include="Assets\Icons\LightMode\dark_mode.png" />
     <Resource Include="Assets\Icons\fitness_121040.ico" />
-    <Resource Include="Assets\Icons\folder.png" />
-    <Resource Include="Assets\Icons\menu.png" />
-    <Resource Include="Assets\Icons\refresh.png" />
-    <Resource Include="Assets\Icons\search.png" />
-    <Resource Include="Assets\Icons\upload.png" />
-    <Resource Include="Assets\Icons\vo2_max.png" />
+    <Resource Include="Assets\Icons\DarkMode\light_mode.png" />
   </ItemGroup>
 
   <ItemGroup>
     <EditorConfigFiles Remove="C:\Users\Jackson.YH.Fan\source\repos\WPF\SportsRecorder\SportsRecorder\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\Icons\DarkMode\database.png" />
+    <Resource Include="Assets\Icons\LightMode\database.png" />
+    <Resource Include="Assets\Icons\LightMode\date.png" />
+    <Resource Include="Assets\Icons\LightMode\download.png" />
+    <Resource Include="Assets\Icons\LightMode\fitness.png" />
+    <Resource Include="Assets\Icons\LightMode\folder.png" />
+    <Resource Include="Assets\Icons\LightMode\menu.png" />
+    <Resource Include="Assets\Icons\LightMode\refresh.png" />
+    <Resource Include="Assets\Icons\LightMode\search.png" />
+    <Resource Include="Assets\Icons\LightMode\upload.png" />
+    <Resource Include="Assets\Icons\LightMode\vo2_max.png" />
   </ItemGroup>
 
   <ItemGroup>
