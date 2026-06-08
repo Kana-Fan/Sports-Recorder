@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using SkiaSharp;
 using System.Windows;
 using TitlebarAdaptive.WPF;
 
@@ -15,6 +11,8 @@ namespace SportsRecorder.Services
 
         public static bool IsDark { get; private set; } = true;
 
+        public static SKColor AxisColor { get; private set; } = SKColor.Parse("#FFFFFFFF");
+
         // 主題切換後通知訂閱者
         public static event Action? ThemeChanged;
 
@@ -23,7 +21,7 @@ namespace SportsRecorder.Services
             IsDark = !IsDark;
 
             Apply(IsDark ? Dark : Light);
-            ApplyTitleBar(IsDark);
+            ApplyColor(IsDark);
 
             ThemeChanged?.Invoke();
         }
@@ -47,11 +45,13 @@ namespace SportsRecorder.Services
             }
         }
 
-        private static void ApplyTitleBar(bool isDark)
+        private static void ApplyColor(bool isDark)
         {
             var mainWindow = Application.Current.MainWindow;
             // TitleBarIsLight = true 代表淺色（深色文字），isDark 時要 false
             OriginalWindowHelper.SetTitleBarIsLight(mainWindow, !isDark);
+
+            AxisColor = isDark ? SKColor.Parse("#FFFFFFFF") : SKColor.Parse("#FF000000");
         }
     }
 }

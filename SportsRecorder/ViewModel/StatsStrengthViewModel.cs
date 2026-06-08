@@ -1,31 +1,19 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Drawing.Charts;
-using DocumentFormat.OpenXml.Math;
-using DocumentFormat.OpenXml.Office2010.PowerPoint;
-using DocumentFormat.OpenXml.Vml.Office;
-using DocumentFormat.OpenXml.Wordprocessing;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
-using LiveChartsCore.Drawing;
+using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
 using SportsRecorder.Model;
 using SportsRecorder.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel
 {
-    internal class StatsStrengthViewModel : BaseViewModel
+    internal class StatsStrengthViewModel : BaseViewModel, IDisposable
     {
         private readonly IDialogService _dialogService;
 
@@ -209,11 +197,60 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        // 背景線條顏色
+        private DrawMarginFrame _drawMarginFrame;
+        public DrawMarginFrame DrawMarginFrame
+        {
+            get => _drawMarginFrame;
+            set => SetProperty(ref _drawMarginFrame, value);
+        }
+
+        private ICartesianAxis[] _xAxes;
+        public ICartesianAxis[] XAxes
+        {
+            get => _xAxes;
+            set => SetProperty(ref _xAxes, value);
+        }
+
+        private ICartesianAxis[] _yAxes;
+        public ICartesianAxis[] YAxes
+        {
+            get => _yAxes;
+            set => SetProperty(ref _yAxes, value);
+        }
+
+        private DrawMarginFrame _lineDrawMarginFrame;
+        public DrawMarginFrame LineDrawMarginFrame
+        {
+            get => _lineDrawMarginFrame;
+            set => SetProperty(ref _lineDrawMarginFrame, value);
+        }
+
+        private ICartesianAxis[] _linexAxes;
+        public ICartesianAxis[] LineXAxes
+        {
+            get => _linexAxes;
+            set => SetProperty(ref _linexAxes, value);
+        }
+
+        private ICartesianAxis[] _lineYAxes;
+        public ICartesianAxis[] LineYAxes
+        {
+            get => _lineYAxes;
+            set => SetProperty(ref _lineYAxes, value);
+        }
+
+        private SKColor _axisColor = ThemeService.AxisColor;
+        public SKColor AxisColor
+        {
+            get => _axisColor;
+            set => SetProperty(ref _axisColor, value);
+        }
+
         // Commands
         public ICommand BodyPartToggleSeries { get; }
         public ICommand ExercisesToggleSeries { get; }
         public ICommand SwitchSheet { get; }
-
         public ICommand Refresh { get; }
 
         public StatsStrengthViewModel()
@@ -222,7 +259,10 @@ namespace SportsRecorder.ViewModel
 
             Records = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>("records.json");
 
+            InitChart();
             GetData();
+
+            ThemeService.ThemeChanged += ChangeColor;
 
             BodyPartToggleSeries = new RelayCommand<string>(name =>
             {
@@ -294,6 +334,10 @@ namespace SportsRecorder.ViewModel
 
                 LineChartTitle = _lineIsWeight ? "各部位運動每日最大訓練重量" : _lineIsSet ? "各部位運動每日組數" : "各部位運動每日次數";
                 LineYAxisLabeler = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
+
+                if (LineYAxes?[0] is Axis yAxis)
+                    yAxis.Labeler = LineYAxisLabeler;
+
                 _bodyPartVisibleSeries.Clear();
                 UpdateLineChart(_lastStrengthRecords, NowBodyPart);
             });
@@ -399,7 +443,7 @@ namespace SportsRecorder.ViewModel
                     }).ToArray(),
                     IsVisible = _bodyPartVisibleSeries.Count == 0 || _bodyPartVisibleSeries.Contains(bodyPart),
                     ShowDataLabels = true,
-                    DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")), // 數值的顏色
+                    DataLabelsPaint = new SolidColorPaint(AxisColor), // 數值的顏色
                     Fill = new SolidColorPaint(BodyPartColor[bodyPart]) // 循環取色
                 }
             ).ToArray();
@@ -533,5 +577,28 @@ namespace SportsRecorder.ViewModel
         public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MM/dd");
         public Func<double, string> YAxisLabeler { get; set; } = value => $"{value:N0} kg";
         public Func<double, string> LineYAxisLabeler { get; set; } = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
+
+        private void InitChart()
+        {
+            DrawMarginFrame = ChartTheme.BuildMarginFrame(AxisColor);
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor);
+            YAxes = ChartTheme.BuildYAxes(YAxisLabeler, AxisColor);
+
+            LineDrawMarginFrame = ChartTheme.BuildMarginFrame(AxisColor);
+            LineXAxes = ChartTheme.BuildDateTimeXAxes(AxisColor);
+            LineYAxes = ChartTheme.BuildYAxes(LineYAxisLabeler, AxisColor);
+            UpdateBarChart(_lastAllBodyParts);
+        }
+
+        private void ChangeColor()
+        {
+            AxisColor = ThemeService.AxisColor;
+            InitChart();
+        }
+
+        public void Dispose()
+        {
+            ThemeService.ThemeChanged -= ChangeColor;
+        }
     }
 }

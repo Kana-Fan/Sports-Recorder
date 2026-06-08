@@ -12,7 +12,7 @@
         wpf:OriginalWindowHelper.TitleBarIsLight="False"
         mc:Ignorable="d"
         Title="Sports Recorder"
-        Icon="/Assets/Icons/fitness_121040.ico"
+        Icon="{DynamicResource Strength}"
         Height="700" Width="1000"
         MinHeight="700" MinWidth="1000"
         Closing="Window_Closing">
@@ -22,7 +22,6 @@
 
     <Window.Resources>
         <local:ResourceKeyToImageConverter x:Key="ResKeyToImg"/>
-        
         <DataTemplate DataType="{x:Type vm:TrainingJournalViewModel}">
             <views:TrainingJournalView />
         </DataTemplate>
@@ -43,7 +42,7 @@
         </DataTemplate>
     </Window.Resources>
 
-    <Grid Background="{DynamicResource BackgroundColor}">
+    <Grid Background="{DynamicResource NavBackgroundColor}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto"/>
             <ColumnDefinition Width="*" />
@@ -66,7 +65,7 @@
                 </Grid.RowDefinitions>
 
                 <Button Grid.Row="0"
-                        Margin="10,20,10,10"
+                        Margin="10,28,10,10"
                         Click="ToggleNavButton_Click"
                         Style="{StaticResource MenuButton}">
                     <Image Source="{DynamicResource Menu}"
@@ -86,25 +85,21 @@
                                                   ItemsSource="{Binding Children}">
                             <StackPanel Orientation="Horizontal">
                                 <Image Source="{Binding IconKey, Converter={StaticResource ResKeyToImg}}"
-                                       Style="{StaticResource MenuImageStyle}"/>
-                                <TextBlock Tag="NavText" Text="{Binding Title}" Padding="4,2"/>
-                            </StackPanel>
-                        </HierarchicalDataTemplate>
-                    </TreeView.ItemTemplate>
-                </TreeView>
+                                        Style="{StaticResource MenuImageStyle}"/>
 
-                <TreeView Grid.Row="2"
-                          x:Name="NavTreeViewIcon"
-                          ItemsSource="{Binding NavItems}"
-                          Style="{StaticResource TreeView}"
-                          ItemContainerStyle="{StaticResource TreeViewItem}"
-                          SelectedItemChanged="TreeView_SelectedItemChanged"
-                          Visibility="Collapsed">
-                    <TreeView.ItemTemplate>
-                        <HierarchicalDataTemplate DataType="{x:Type m:NavigationItem}">
-                            <StackPanel Orientation="Horizontal">
-                                <Image Source="{Binding IconKey, Converter={StaticResource ResKeyToImg}}"
-                                       Style="{StaticResource MenuImageStyle}"/>
+                                <TextBlock Text="{Binding Title}" Padding="4,2">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.IsNavCollapsed, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                             Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
                             </StackPanel>
                         </HierarchicalDataTemplate>
                     </TreeView.ItemTemplate>
@@ -124,6 +119,9 @@
         </Border>
 
         <!-- 右側內容頁 -->
-        <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" />
+        <Border Grid.Column="1"
+                Style="{StaticResource PageBorderStyle}">
+            <ContentControl Content="{Binding CurrentPage}" />
+        </Border>
     </Grid>
 </Window>

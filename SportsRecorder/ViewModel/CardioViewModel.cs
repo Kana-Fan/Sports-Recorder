@@ -1,16 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Wordprocessing;
 using SportsRecorder.Model;
 using SportsRecorder.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel

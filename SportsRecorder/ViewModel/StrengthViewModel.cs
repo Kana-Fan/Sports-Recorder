@@ -1,15 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using SportsRecorder.Model;
 using SportsRecorder.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 

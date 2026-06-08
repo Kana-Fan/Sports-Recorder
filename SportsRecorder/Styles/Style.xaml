@@ -4,10 +4,26 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <FontFamily x:Key="LINESeedTW_TTF_Rg">/Assets/Fonts/#LINE Seed TW_TTF Regular</FontFamily>
 
+    <!--Border-->
+    <Style x:Key="BorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
+        <Setter Property="CornerRadius" Value="20"/>
+    </Style>
+
+    <Style x:Key="PageBorderStyle" TargetType="Border" BasedOn="{StaticResource BorderStyle}">
+        <Setter Property="Margin" Value="5"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="BorderBrush" Value="Black"/>
+    </Style>
+
+    <Style x:Key="ChartBorderStyle" TargetType="Border" BasedOn="{StaticResource PageBorderStyle}">
+        <Setter Property="Background" Value="{DynamicResource ChartBackgroundColor}"/>
+        <Setter Property="Margin" Value="15"/>
+    </Style>
+
     <!--圖-->
     <Style TargetType="lvc:CartesianChart">
-        <Setter Property="Background" Value="{DynamicResource ChartBackgroundColor}"/>
-        <Setter Property="Margin" Value="15,0,15,15"/>
+        <Setter Property="Background" Value="Transparent"/>
     </Style>
 
     <!--圖像-->
@@ -26,7 +42,7 @@
     <Style x:Key="TitleImageStyle" TargetType="Image" BasedOn="{StaticResource ImageStyle}">
         <Setter Property="Width" Value="25"/>
         <Setter Property="Height" Value="25"/>
-        <Setter Property="Margin" Value="5"/>
+        <Setter Property="Margin" Value="10,5,5,5"/>
     </Style>
 
     <!-- TreeView 樣式：移除邊距與邊框-->
@@ -60,7 +76,7 @@
                             <!-- 左側指示條 -->
                             <Rectangle x:Name="SelectionBar"
                                    Grid.Column="0"
-                                   Fill="#FF006BFB"
+                                   Fill="#FF1E9BFA"
                                    RadiusX="2" RadiusY="2"
                                    Opacity="0" Height="20"/>
 
@@ -138,7 +154,7 @@
                         <!-- 懸停 -->
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="SelectionBar" Property="Opacity" Value="0.4"/>
-                            <Setter TargetName="HoverBg" Property="Background" Value="{DynamicResource MouseOverBackgroundColor}"/>
+                            <Setter TargetName="HoverBg" Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
                         </Trigger>
 
                         <!-- 選取 -->
@@ -147,6 +163,14 @@
                             <Setter TargetName="HoverBg" Property="Background" Value="{DynamicResource SelectedBackgroundColor}"/>
                             <Setter Property="Foreground" Value="{DynamicResource SelectedTextColor}"/>
                         </Trigger>
+
+                        <DataTrigger Binding="{Binding DataContext.IsNavCollapsed,
+                                 RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                 Value="True">
+                            <Setter TargetName="ExpandArrow"  Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="ItemsHost"    Property="Visibility" Value="Collapsed"/>
+                            <Setter Property="IsExpanded"     Value="False"/>
+                        </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -248,13 +272,12 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- 文字輸入框，移除邊框 -->
-                            <DatePickerTextBox
-                                x:Name="PART_TextBox"
-                                Grid.Column="0"
-                                Foreground="{DynamicResource TextColor}"
-                                Focusable="{TemplateBinding Focusable}"
-                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
+                            <DatePickerTextBox x:Name="PART_TextBox"
+                                               Grid.Column="0"
+                                               Foreground="{DynamicResource TextColor}"
+                                               Focusable="{TemplateBinding Focusable}"
+                                               HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                               VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}">
                                 <DatePickerTextBox.Style>
                                     <Style TargetType="DatePickerTextBox">
                                         <Setter Property="Template">
@@ -274,16 +297,15 @@
                             </DatePickerTextBox>
 
                             <!-- 自訂日曆按鈕 -->
-                            <Button
-                                x:Name="PART_Button"
-                                Grid.Column="1"
-                                Focusable="False"
-                                Width="28"
-                                Height="28"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="0"
-                                Cursor="Hand">
+                            <Button x:Name="PART_Button"
+                                    Grid.Column="1"
+                                    Focusable="False"
+                                    Width="28"
+                                    Height="28"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0"
+                                    Cursor="Hand">
                                 <Button.Template>
                                     <ControlTemplate TargetType="{x:Type Button}">
                                         <Border Background="{TemplateBinding Background}"
@@ -294,23 +316,17 @@
                                         </Border>
                                         <ControlTemplate.Triggers>
                                             <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter Property="Background" Value="#EEEEEE"/>
+                                                <Setter Property="Background" Value="{DynamicResource LegendMouseOver}"/>
                                             </Trigger>
                                             <Trigger Property="IsPressed" Value="True">
-                                                <Setter Property="Background" Value="#DDDDDD"/>
+                                                <Setter Property="Background" Value="{DynamicResource LegendPressed}"/>
                                             </Trigger>
                                         </ControlTemplate.Triggers>
                                     </ControlTemplate>
                                 </Button.Template>
 
-                                <!-- 自訂圖示：使用 Path 畫日曆 -->
-                                <Path Width="16" Height="16"
-                                      Stretch="Uniform"
-                                      Fill="{DynamicResource TextColor}"
-                                      Data="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14
-                                            c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z
-                                            m0 16H5V10h14v10zm0-12H5V6h14v2z
-                                            M7 12h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/>
+                                <!-- 自訂圖示 -->
+                                <Image Source="{DynamicResource Date}" Style="{StaticResource ImageStyle}"/>
                             </Button>
 
                             <!-- 彈出的日曆 Popup -->
@@ -326,24 +342,23 @@
         </Setter>
     </Style>
 
-    <!-- 共用 DataGrid -->
-    <!-- 移除 Row Header -->
-    <Style TargetType="DataGridRowHeader">
-        <Setter Property="Width" Value="0"/>
-        <Setter Property="Visibility" Value="Collapsed"/>
-    </Style>
-
+    <!-- DataGrid -->
     <Style x:Key="ModernDataGrid" TargetType="DataGrid">
         <Setter Property="AutoGenerateColumns" Value="False"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="CanUserReorderColumns" Value="False"/>
         <Setter Property="RowHeight" Value="50"/>
         <Setter Property="ColumnHeaderHeight" Value="40"/>
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Margin" Value="10" />
-        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Margin" Value="10"/>
+        <Setter Property="BorderThickness" Value="1,0,0,0"/>
+        <Setter Property="BorderBrush" Value="Black"/>
         <Setter Property="AlternatingRowBackground" Value="{DynamicResource SheetBackgroundColor}"/>
-        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="GridLinesVisibility" Value="All"/>
+        <Setter Property="HeadersVisibility" Value="Column"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
     </Style>
 
     <!-- 標題 -->
@@ -351,7 +366,7 @@
         <Setter Property="Background" Value="{DynamicResource SheetBackgroundColor}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderThickness" Value="0,1,1,1"/>
         <Setter Property="BorderBrush" Value="Black"/>
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="HorizontalContentAlignment" Value="Center"/>
@@ -362,7 +377,7 @@
     <Style x:Key="ModernCell" TargetType="DataGridCell">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="17"/>
-        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="BorderBrush" Value="Black"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -453,6 +468,56 @@
         <Setter Property="Height" Value="30" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <Style x:Key="LegendToggleButton" TargetType="ToggleButton">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Margin" Value="0,5"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Root"
+                        Background="{TemplateBinding Background}"
+                        BorderThickness="0"
+                        CornerRadius="4"
+                        Padding="6,3">
+                        <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root"
+                                Property="Background"
+                                Value="{DynamicResource LegendMouseOver}"/>
+                        </Trigger>
+
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource LegendPressed}"/>
+                        </Trigger>
+
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="False"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Root" Property="Opacity" Value="0.7"/>
+                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource LegendMouseOver}"/>
+                        </MultiTrigger>
+
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Root"
+                                    Property="Background"
+                                    Value="{DynamicResource LegendPressed}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <!--ComboBox-->

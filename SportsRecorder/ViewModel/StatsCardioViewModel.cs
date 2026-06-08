@@ -1,29 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Bibliography;
-using DocumentFormat.OpenXml.Wordprocessing;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
+using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Drawing.Geometries;
 using LiveChartsCore.SkiaSharpView.Painting;
-using LiveChartsCore.SkiaSharpView.VisualElements;
-using LiveChartsCore.SkiaSharpView.WPF;
 using SkiaSharp;
 using SportsRecorder.Model;
 using SportsRecorder.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel
 {
-    class StatsCardioViewModel : BaseViewModel
+    class StatsCardioViewModel : BaseViewModel, IDisposable
     {
         private readonly IDialogService _dialogService;
 
@@ -169,6 +158,35 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        // 背景線條顏色
+        private DrawMarginFrame _drawMarginFrame;
+        public DrawMarginFrame DrawMarginFrame
+        {
+            get => _drawMarginFrame;
+            set => SetProperty(ref _drawMarginFrame, value);
+        }
+
+        private ICartesianAxis[] _xAxes;
+        public ICartesianAxis[] XAxes
+        {
+            get => _xAxes;
+            set => SetProperty(ref _xAxes, value);
+        }
+
+        private ICartesianAxis[] _yAxes;
+        public ICartesianAxis[] YAxes
+        {
+            get => _yAxes;
+            set => SetProperty(ref _yAxes, value);
+        }
+
+        private SKColor _axisColor = ThemeService.AxisColor;
+        public SKColor AxisColor
+        {
+            get => _axisColor;
+            set => SetProperty(ref _axisColor, value);
+        }
+
         // Commands
         public ICommand SwitchSheet { get; }
 
@@ -184,7 +202,10 @@ namespace SportsRecorder.ViewModel
 
             SheetTitle = "每日運動總時間";
 
+            InitChart();
             GetData();
+
+            ThemeService.ThemeChanged += ChangeColor;
 
             SwitchSheet = new RelayCommand(() =>
             {
@@ -240,7 +261,10 @@ namespace SportsRecorder.ViewModel
             YAxisLabeler = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
 
             // 期間內的有氧運動總時間
-            TotalTxt = _sheetIsTime ? "總運動時間" : "總運動距離(km)";
+            TotalTxt = _sheetIsTime ? "總運動時間" : "總運動距離";
+
+            if (YAxes?[0] is Axis yAxis)
+                yAxis.Labeler = YAxisLabeler;
 
             // 篩選區間內的紀錄
             var cardioRecords =
@@ -312,8 +336,7 @@ namespace SportsRecorder.ViewModel
                 GeometryFill = new SolidColorPaint(SKColor.Parse("#FF7C8EFF")),
                 GeometryStroke = new SolidColorPaint(SKColor.Parse("#FF7C8EFF")) { StrokeThickness = 3 },
                 Stroke = new SolidColorPaint(SKColor.Parse("#FF7C8EFF")) { StrokeThickness = 5 },
-                DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")),
-                ShowDataLabels = false
+                DataLabelsPaint = new SolidColorPaint(AxisColor)
             };
 
             SelectRecord = allCardios.Select((Name, index) =>
@@ -331,7 +354,7 @@ namespace SportsRecorder.ViewModel
                     IsVisible = _visibleSeries.Count == 0 || _visibleSeries.Contains(Name),
                     ShowDataLabels = true,
                     DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Middle,
-                    DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFA1A7CC")), // 數值的顏色
+                    DataLabelsPaint = new SolidColorPaint(SKColor.Parse("#FFFFFFFF")), // 數值的顏色
                     Fill = new SolidColorPaint(DarkPalette[index % DarkPalette.Length]) // 循環取色
                 }
             ).Append(totalSeries).ToArray();
@@ -379,5 +402,27 @@ namespace SportsRecorder.ViewModel
         public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MM/dd");
 
         public Func<double, string> YAxisLabeler { get; set; } = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
+
+        /// <summary>
+        /// 把統計圖的設定改成用程式碼設定
+        /// </summary>
+        private void InitChart()
+        {
+            DrawMarginFrame = ChartTheme.BuildMarginFrame(AxisColor);
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor);
+            YAxes = ChartTheme.BuildYAxes(YAxisLabeler, AxisColor);
+            UpdateBarChart(_lastCardioRecords);
+        }
+
+        private void ChangeColor()
+        {
+            AxisColor = ThemeService.AxisColor;
+            InitChart();
+        }
+
+        public void Dispose()
+        {
+            ThemeService.ThemeChanged -= ChangeColor;
+        }
     }
 }

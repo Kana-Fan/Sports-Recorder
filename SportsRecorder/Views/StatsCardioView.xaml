@@ -14,7 +14,7 @@
         <vm:StatsCardioViewModel/>
     </UserControl.DataContext>
 
-    <Grid Name="ChartContainer">
+    <Grid Name="ChartContainer" Margin="0,0,0,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -39,7 +39,7 @@
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="50"/>
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
@@ -55,11 +55,11 @@
 
             <Button Grid.Row="2" Grid.Column="3"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Margin="10"
+                    Margin="10,10,20,10"
                     Width="20" Height="20"
                     Background="Transparent"
                     Command="{Binding Refresh}"
-                    Style="{StaticResource PrimaryButton}">
+                    Style="{StaticResource PrimaryButton}" Cursor="Hand">
                 <Image Style="{StaticResource ImageStyle}" Source="{DynamicResource Refresh}"/>
             </Button>
 
@@ -79,48 +79,22 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <lvc:CartesianChart Grid.Row="0" Grid.Column="0"
-                                    x:Name="CardioChart"
-                                    Series="{Binding SelectRecord}"
-                                    DrawMarginFrame="{lvc:Frame Stroke={lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=2}}">
-                    <lvc:CartesianChart.Title>
-                        <lvc:XamlDrawnLabelVisual Text="{Binding SheetTitle}" TextSize="20" Padding="15">
-                            <lvc:XamlDrawnLabelVisual.Paint>
-                                <lvc:SolidColorPaint Color="{StaticResource gray4}" FontFamily="Microsoft JhengHei"/>
-                            </lvc:XamlDrawnLabelVisual.Paint>
-                        </lvc:XamlDrawnLabelVisual>
-                    </lvc:CartesianChart.Title>
+                <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource ChartBorderStyle}">
+                    <Grid >
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                    <lvc:CartesianChart.XAxes>
-                        <lvc:AxesCollection>
-                            <lvc:XamlDateTimeAxis
-                                Interval="1.00:00:00"
-                                DateFormatter="{Binding Formatter}"
-                                LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"
-                                SeparatorsPaint="#c8c8c8"
-                                SeparatorsAtCenter="False"
-                                TicksPaint="#232323"
-                                TicksAtCenter="True"/>
-                        </lvc:AxesCollection>
-                    </lvc:CartesianChart.XAxes>
+                        <TextBlock Grid.Row="0"  Text="{Binding SheetTitle}" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
 
-                    <lvc:CartesianChart.YAxes>
-                        <lvc:AxesCollection>
-                            <lvc:XamlAxis
-                                NamePaint="{lvc:SolidColorPaint Color={StaticResource gray1},FontFamily=Microsoft JhengHei}"
-                                TextSize="18"
-                                Labeler="{Binding YAxisLabeler}"
-                                LabelsPaint="{lvc:SolidColorPaint Color={StaticResource gray},FontFamily=Microsoft JhengHei}"
-                                SeparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                                SubseparatorsPaint="{lvc:SolidColorPaint Color={StaticResource gray2}, StrokeWidth=0.5}"
-                                SubseparatorsCount="9"
-                                ZeroPaint="{lvc:SolidColorPaint Color={StaticResource gray1}, StrokeWidth=2}"
-                                TicksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1.5}"
-                                SubticksPaint="{lvc:SolidColorPaint Color={StaticResource gray}, StrokeWidth=1}"
-                                MinLimit="0"/>
-                        </lvc:AxesCollection>
-                    </lvc:CartesianChart.YAxes>
-                </lvc:CartesianChart>
+                        <lvc:CartesianChart Grid.Row="1"
+                                            Series="{Binding SelectRecord}"
+                                            XAxes="{Binding XAxes}"
+                                            YAxes="{Binding YAxes}"
+                                            DrawMarginFrame="{Binding DrawMarginFrame}"/>
+                    </Grid>
+                </Border>
 
                 <Grid Grid.Row="0" Grid.Column="1">
                     <Grid.RowDefinitions>
@@ -139,11 +113,7 @@
                                 <ToggleButton IsChecked="{Binding IsVisible}"
                                               Command="{Binding DataContext.ToggleSeries, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                               CommandParameter="{Binding Name}"
-                                              HorizontalAlignment="Left"
-                                              Background="Transparent"
-                                              BorderThickness="0"
-                                              Cursor="Hand"
-                                              Margin="0,5">
+                                              Style="{StaticResource LegendToggleButton}">
                                     <StackPanel Orientation="Horizontal">
                                         <Ellipse Width="10" Height="10" Margin="0,0,5,0">
                                             <Ellipse.Fill>
@@ -178,10 +148,7 @@
                               ColumnHeaderStyle="{StaticResource ModernHeader}"
                               CellStyle="{StaticResource ModernCell}"
                               RowStyle="{StaticResource ModernRow}"
-                              CanUserAddRows="False"
-                              CanUserReorderColumns="False"
                               IsReadOnly="True"
-                              RowHeaderWidth="0"
                               PreviewMouseWheel="mousewheel">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="運動" Width="*" Binding="{Binding Name}"/>
@@ -195,7 +162,7 @@
                 <!-- 空內容提示文字 -->
                 <Border Grid.RowSpan="3"
                         Grid.ColumnSpan="2"
-                        Background="{DynamicResource BackgroundColor}"
+                        Style="{StaticResource BorderStyle}"
                         Visibility="{Binding IsDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="目前無資料"
                                Style="{StaticResource Hint}"/>

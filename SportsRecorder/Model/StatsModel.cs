@@ -1,14 +1,4 @@
-﻿using LiveChartsCore;
-using LiveChartsCore.Defaults;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SportsRecorder.Model
+﻿namespace SportsRecorder.Model
 {
     /// <summary>
     /// 統計分析用的class。

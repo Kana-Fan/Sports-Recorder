@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+﻿using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -20,6 +15,7 @@ namespace SportsRecorder
         /// 是否允許輸入小數，預設為 false（僅允許整數）。
         /// 可在 XAML 中設定此屬性。
         /// </summary>
+        public int MaxLength { get; set; } = 0; // 0 = 不限制
         public bool AllowDecimal { get; set; } = false;
 
         private readonly IDialogService _dialogService = new DialogService();
@@ -28,6 +24,11 @@ namespace SportsRecorder
         {
             if (editingElement is TextBox edit)
             {
+                if (MaxLength > 0)
+                {
+                    edit.MaxLength = MaxLength;
+                }
+
                 edit.PreviewTextInput += Edit_PreviewTextInput;
                 edit.PreviewKeyDown += Edit_PreviewKeyDown;
                 DataObject.AddPastingHandler(edit, OnPaste);

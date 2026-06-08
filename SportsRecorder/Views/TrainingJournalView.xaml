@@ -18,16 +18,13 @@
                       ColumnHeaderStyle="{StaticResource ModernHeader}"
                       CellStyle="{StaticResource ModernCell}"
                       RowStyle="{StaticResource ModernRow}"
-                      CanUserAddRows="False"
-                      CanUserReorderColumns="False"
-                      RowHeaderWidth="0"
                       PreviewMouseWheel="mousewheel">
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="運動" Width="*">
+                    <DataGridTemplateColumn Header="運動" Width="150">
                         <DataGridTemplateColumn.CellTemplate>
                             <!-- 非編輯狀態：顯示文字 -->
                             <DataTemplate>
-                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="4,0"/>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                         <DataGridTemplateColumn.CellEditingTemplate>
@@ -39,8 +36,8 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <s:DataGridNumericColumn Header="距離(km)" Width="120" Binding="{Binding DistanceKm, Mode=TwoWay}" AllowDecimal="True"/>
-                    <s:DataGridNumericColumn Header="時間(min)" Width="120" Binding="{Binding DurationMin, Mode=TwoWay}"/>
+                    <s:DataGridNumericColumn Header="距離(km)" Width="*" Binding="{Binding DistanceKm, Mode=TwoWay}" AllowDecimal="True" MaxLength="10"/>
+                    <s:DataGridNumericColumn Header="時間(min)" Width="*" Binding="{Binding DurationMin, Mode=TwoWay}" MaxLength="4"/>
                     <DataGridTemplateColumn Header="操作" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -62,8 +59,6 @@
                       ColumnHeaderStyle="{StaticResource ModernHeader}"
                       CellStyle="{StaticResource ModernCell}"
                       RowStyle="{StaticResource ModernRow}"
-                      CanUserAddRows="False"
-                      CanUserReorderColumns="False"
                       PreviewMouseWheel="mousewheel">
                 <DataGrid.Columns>
                     <!-- 部位欄位 -->
@@ -84,7 +79,7 @@
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
                     <!--運動名稱-->
-                    <DataGridTemplateColumn Header="運動" Width="*">
+                    <DataGridTemplateColumn Header="運動" Width="180">
                         <DataGridTemplateColumn.CellTemplate>
                             <!--非編輯狀態：顯示文字-->
                             <DataTemplate>
@@ -106,9 +101,9 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <s:DataGridNumericColumn Header="重量(kg)" Width="120" Binding="{Binding WeightKg, Mode=TwoWay}" AllowDecimal="True"/>
-                    <s:DataGridNumericColumn Header="組數" Width="100" Binding="{Binding Sets, Mode=TwoWay}"/>
-                    <s:DataGridNumericColumn Header="次數" Width="100" Binding="{Binding Reps, Mode=TwoWay}"/>
+                    <s:DataGridNumericColumn Header="重量(kg)" Width="2*" Binding="{Binding WeightKg, Mode=TwoWay}" AllowDecimal="True" MaxLength="5"/>
+                    <s:DataGridNumericColumn Header="組數" Width="*" Binding="{Binding Sets, Mode=TwoWay}" MaxLength="3"/>
+                    <s:DataGridNumericColumn Header="次數" Width="*" Binding="{Binding Reps, Mode=TwoWay}" MaxLength="3"/>
                     <DataGridTemplateColumn Header="操作" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -124,13 +119,15 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Grid>
+    <Grid  Margin="0,0,0,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal">
@@ -180,57 +177,46 @@
 
                 <TextBlock Text="總持續時間(min)" Style="{StaticResource Subheading}"/>
 
-                <TextBlock Text="{Binding CardiosTotalDuration}" Style="{StaticResource Subheading}" FontSize="25"/>
+                <TextBlock Text="{Binding CardiosTotalDuration}" Style="{StaticResource Subheading}"/>
             </StackPanel>
         </Grid>
 
         <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
 
-        <Grid Grid.Row="4">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="auto"/>
-            </Grid.RowDefinitions>
+        <TextBlock Grid.Row="4" Text="運動項目" Style="{StaticResource Subheading}" Margin="10,10,10,10"/>
+        
+        <!-- 依類型切換表格 -->
+        <ScrollViewer x:Name="scroll_viewer" Grid.Row="5" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <ContentControl Content="{Binding CurrentLog, Mode=TwoWay}" Margin="0,0,0,17">
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsCardio}" Value="True">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource CardioTemplate}"/>
+                                </DataTrigger>
 
-            <TextBlock Grid.Row="0" Text="運動項目" Style="{StaticResource Subheading}" Margin="10,10,10,10"/>
+                                <DataTrigger Binding="{Binding IsStrength}" Value="True">
+                                    <Setter Property="ContentTemplate" Value="{StaticResource StrengthTemplate}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
 
-            <!-- 依類型切換表格 -->
-            <ScrollViewer x:Name="scroll_viewer" Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <Grid>
-                    <ContentControl Content="{Binding CurrentLog, Mode=TwoWay}" Margin="0,0,0,17">
-                        <ContentControl.Style>
-                            <Style TargetType="ContentControl">
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsCardio}" Value="True">
-                                        <Setter Property="ContentTemplate" Value="{StaticResource CardioTemplate}"/>
-                                    </DataTrigger>
-
-                                    <DataTrigger Binding="{Binding IsStrength}" Value="True">
-                                        <Setter Property="ContentTemplate" Value="{StaticResource StrengthTemplate}"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </ContentControl.Style>
-                    </ContentControl>
-
-                    <!-- 空內容提示文字 -->
-                    <Border Background="{DynamicResource BackgroundColor}"
+                <!-- 空內容提示文字 -->
+                <Border Style="{StaticResource BorderStyle}"
                             Visibility="{Binding IsDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
-                        <TextBlock Text="今天還沒有記錄喔~"
+                    <TextBlock Text="今天還沒有記錄喔~"
                                    Style="{StaticResource Hint}"/>
-                    </Border>
-                </Grid>
-            </ScrollViewer>
-
-            <!-- 底部按鈕列 -->
-            <Grid  Grid.Row="2" Margin="10">
-                <Button Content="儲存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
-                <Button Content="+" Command="{Binding AddEntryCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"/>
+                </Border>
             </Grid>
+        </ScrollViewer>
+
+        <!-- 底部按鈕列 -->
+        <Grid  Grid.Row="6" Margin="10">
+            <Button Content="儲存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
+            <Button Content="+" Command="{Binding AddEntryCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"/>
         </Grid>
     </Grid>
 </UserControl>

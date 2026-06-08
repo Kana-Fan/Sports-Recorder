@@ -22,112 +22,188 @@ namespace SportsRecorder
     public partial class MainWindow : Window
     {
         private readonly IDialogService _dialogService;
+        private NavigationItem _selectedNavItem;
+
+        private int _syncingDepth = 0;
+        private bool IsSyncing => _syncingDepth > 0;
+
+        private const double NavExpandedWidth = 150;
+        private MainViewModel Vm => DataContext as MainViewModel;
 
         public MainWindow()
         {
             InitializeComponent();
             _dialogService = new DialogService();
 
+            ThemeService.ThemeChanged -= RebuildNavForTheme;
             ThemeService.ThemeChanged += RebuildNavForTheme;
+
+            Loaded += MainWindow_Loaded;
         }
 
-        private bool _isNavCollapsed = false;
-        private const double NavExpandedWidth = 150;
-        private NavigationItem _selectedNavItem;
-        private bool _isSyncingSelection = false; // 防止事件重複觸發
+        private void SyncSelection(NavigationItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            _syncingDepth++;
+            try
+            {
+                SelectTreeViewItem(NavTreeView, item);
+            }
+            finally
+            {
+                _syncingDepth--;
+            }
+        }
+
+        private bool SelectTreeViewItem(ItemsControl parent, object target)
+        {
+            foreach (var item in parent.Items)
+            {
+                var container = parent.ItemContainerGenerator
+                                      .ContainerFromItem(item) as TreeViewItem;
+                if (container == null)
+                {
+                    continue;
+                }
+
+                if (item == target)
+                {
+                    container.IsSelected = true;
+                    container.BringIntoView();
+                    return true;
+                }
+
+                if (SelectTreeViewItem(container, target))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private void ToggleNavButton_Click(object sender, RoutedEventArgs e)
         {
-            double fromWidth = _isNavCollapsed ? 52 : NavExpandedWidth;
-            double toWidth = _isNavCollapsed ? NavExpandedWidth : 52;
+            if (Vm == null)
+            {
+                return;
+            }
+
+            ExpandAnimation();
+        }
+
+        private void ExpandAnimation()
+        {
+            bool expanding = Vm.IsNavCollapsed; // 即將展開
+
+            // 收起時 TreeView 可能自動觸發 SelectedItemChanged，先封鎖
+            _syncingDepth++;
+
+            double fromWidth = expanding ? 52 : NavExpandedWidth;
+            double toWidth = expanding ? NavExpandedWidth : 52;
 
             var anim = new DoubleAnimation
             {
                 From = fromWidth,
                 To = toWidth,
-                Duration = new Duration(TimeSpan.FromMilliseconds(280)),
+                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
             };
 
-            if (_isNavCollapsed)
+            // 展開完成後恢復選取視覺狀態
+            anim.Completed += (_, _) =>
             {
-                NavTreeViewIcon.Visibility = Visibility.Collapsed;
-                NavTreeView.Visibility = Visibility.Visible;
+                _syncingDepth--;
+                if (expanding)
+                {
+                    SyncSelection(_selectedNavItem);
+                }
 
-                anim.Completed += (s, _) =>
-                {
-                    if (_selectedNavItem != null)
-                    {
-                        SelectTreeViewItem(NavTreeView, _selectedNavItem);
-                    }
-                };
-            }
-            else
-            {
-                anim.Completed += (s, _) =>
-                {
-                    NavTreeView.Visibility = Visibility.Collapsed;
-                    NavTreeViewIcon.Visibility = Visibility.Visible;
-                    if (_selectedNavItem != null)
-                    {
-                        SelectTreeViewItem(NavTreeViewIcon, _selectedNavItem);
-                    }
-                };
-            }
+            };
 
             NavPanel.BeginAnimation(Border.WidthProperty, anim);
 
-            _isNavCollapsed = !_isNavCollapsed;
-        }
-
-        private bool SelectTreeViewItem(ItemsControl parent, object itemToSelect)
-        {
-            _isSyncingSelection = true;
-            try
-            {
-                foreach (var item in parent.Items)
-                {
-                    var container = parent.ItemContainerGenerator
-                                          .ContainerFromItem(item) as TreeViewItem;
-                    if (container == null)
-                    {
-                        continue;
-                    }
-
-                    if (item == itemToSelect)
-                    {
-                        container.IsSelected = true;
-                        container.BringIntoView();
-
-                        return true;
-                    }
-                    if (SelectTreeViewItem(container, itemToSelect))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-            finally
-            {
-                _isSyncingSelection = false;
-            }
+            Vm.IsNavCollapsed = !Vm.IsNavCollapsed;
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            if (_isSyncingSelection)
+            if (IsSyncing || Vm == null)
             {
                 return;
             }
 
-            if (DataContext is MainViewModel vm && e.NewValue is NavigationItem item)
+            if (e.NewValue is not NavigationItem item)
             {
-                var parent = FindParent(item);
-                _selectedNavItem = parent ?? item;
-                vm.NavigateCommand.Execute(item.Key);
+                return;
             }
+
+            var parent = FindParent(item);
+
+            // 收起狀態點了有子節點的父節點 → 展開側欄
+            if (Vm.IsNavCollapsed && parent == null && item.Children?.Count > 0)
+            {
+                _selectedNavItem = item;
+                ExpandAnimation();
+
+                return;
+            }
+
+            _selectedNavItem = parent ?? item;
+            Vm.NavigateCommand.Execute(item.Key);
+        }
+
+        private void RebuildNavForTheme()
+        {
+            if (Vm == null)
+            {
+                return;
+            }
+
+            _syncingDepth++;
+            try
+            {
+                var selectedKey = _selectedNavItem?.Key;
+                Vm.NavItems = Vm.BuildNavItems();
+
+                if (selectedKey == null)
+                {
+                    return;
+                }
+
+                var newItem = FindNavItemByKey(Vm.NavItems, selectedKey);
+                if (newItem != null)
+                {
+                    _selectedNavItem = newItem;
+                    SyncSelection(_selectedNavItem); // 這裡面會自己管 _isSyncingSelection
+                }
+            }
+            finally
+            {
+                _syncingDepth--;
+            }
+        }
+
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (Vm == null)
+            {
+                return;
+            }
+
+            var defaultItem = FindNavItemByKey(Vm.NavItems, "journal");
+            if (defaultItem == null)
+            {
+                return;
+            }
+
+            _selectedNavItem = FindParent(defaultItem) ?? defaultItem;
+            SyncSelection(defaultItem);
+            Vm.NavigateCommand.Execute(defaultItem.Key);
         }
 
         private NavigationItem FindParent(NavigationItem child)
@@ -137,48 +213,37 @@ namespace SportsRecorder
                 return null;
             }
 
-            foreach (var item in navItems)
+            return navItems.FirstOrDefault(item => item.Children?.Contains(child) == true);
+        }
+
+        private NavigationItem FindNavItemByKey(IEnumerable<NavigationItem> items, string key)
+        {
+            foreach (var item in items)
             {
-                if (item.Children.Contains(child))
+                if (item.Key == key)
                 {
                     return item;
                 }
-            }
-            return null;
-        }
 
-        public void RebuildNavForTheme()
-        {
-            _isSyncingSelection = true;
-            try
-            {
-                if (DataContext is MainViewModel vm)
+                if (item.Children?.Count > 0)
                 {
-                    vm.NavItems = vm.BuildNavItems();
-
-                    // 重建後還原選取狀態
-                    if (_selectedNavItem != null)
+                    var found = FindNavItemByKey(item.Children, key);
+                    if (found != null)
                     {
-                        var treeView = _isNavCollapsed ? NavTreeViewIcon : NavTreeView;
-                        SelectTreeViewItem(treeView, _selectedNavItem);
+                        return found;
                     }
                 }
             }
-            finally
-            {
-                _isSyncingSelection = false;
-            }
+
+            return null;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (DataContext is MainViewModel vm)
+            if (Vm?.CheckHasChanged() == true)
             {
-                if (vm.CheckHasChanged())
-                {
-                    _dialogService.ShowMessage("有未儲存的變更，請儲存後再關閉");
-                    e.Cancel = true; // 取消關閉程式
-                }
+                _dialogService.ShowMessage("有未儲存的變更，請儲存後再關閉");
+                e.Cancel = true;
             }
         }
 

@@ -1,16 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.Input;
-using DocumentFormat.OpenXml.Wordprocessing;
 using SportsRecorder.Model;
 using SportsRecorder.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel
@@ -182,6 +175,7 @@ namespace SportsRecorder.ViewModel
                     CurrentLog.Strengths.Add(new Strength());
                 }
 
+                AddPropertyChanged();
                 UpdateDirtyState();
                 OnPropertyChanged(nameof(IsDataEmpty));
             });
@@ -198,7 +192,6 @@ namespace SportsRecorder.ViewModel
                     if (entry is Cardio c)
                     {
                         CurrentLog.Cardios.Remove(c);
-                        RecalculateTotalDuration();
                     }
 
                     else if (entry is Strength s)
@@ -248,8 +241,6 @@ namespace SportsRecorder.ViewModel
 
             // CurrentLog 可能已被清掉，重新載入
             LoadOrCreateLog(SelectedDate);
-
-            RecalculateTotalDuration();
 
             if (JsonStorageService.Save(Records, FileName))
             {
@@ -353,6 +344,8 @@ namespace SportsRecorder.ViewModel
 
             string currentJson = JsonSerializer.Serialize(Records);
             string oldJson = JsonSerializer.Serialize(oldCardioTypes);
+
+            RecalculateTotalDuration();
 
             // 更新狀態，這會觸發 UI 按鈕的啟用/停用
             HasChange = currentJson != oldJson;

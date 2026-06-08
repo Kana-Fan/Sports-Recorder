@@ -1,20 +1,13 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
+﻿using Microsoft.Win32;
 using SportsRecorder.Model;
 using SportsRecorder.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 using ClosedXML.Excel;
 
@@ -135,7 +128,7 @@ namespace SportsRecorder.ViewModel
             {
                 _dialogService.ShowMessage("備份成功~");
 
-                if (_dialogService.Confirm("確定要匯入紀錄嗎？"))
+                if (_dialogService.Confirm("會覆蓋過往紀錄喔 確定要匯入紀錄嗎？"))
                 {
                     // 把新的資料存進去
                     if (JsonStorageService.Save(NewRecords, recordFileName))

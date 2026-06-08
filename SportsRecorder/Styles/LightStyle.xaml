@@ -1,23 +1,18 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
-    <!--圖表相關顏色-->
-    <sys:String x:Key="gray">#6b6b6b</sys:String>
-    <sys:String x:Key="gray1">#FF000000</sys:String>
-    <sys:String x:Key="gray2">#c2c2c2</sys:String>
-    <sys:String x:Key="gray3">#e8e8e8</sys:String>
-    <sys:String x:Key="gray4">#FF000000</sys:String>
-
     <!--背景顏色-->
     <SolidColorBrush x:Key="BackgroundColor" Color="#FFFDFDFD"/>
-    <SolidColorBrush x:Key="NavBackgroundColor" Color="#FFEDEDED"/>
-    <SolidColorBrush x:Key="SelectedBackgroundColor" Color="#E6E8F4"/>
+    <SolidColorBrush x:Key="NavBackgroundColor" Color="#FFFAFAFA"/>
+    <SolidColorBrush x:Key="SelectedBackgroundColor" Color="#FFF1F1F1"/>
     <SolidColorBrush x:Key="MouseOverBackgroundColor" Color="#EAECF6"/>
     <SolidColorBrush x:Key="SheetBackgroundColor" Color="#FFFAFAFA"/>
     <SolidColorBrush x:Key="RowBackgroundColor" Color="#FFECECEC"/>
     <SolidColorBrush x:Key="ButtonBackgroundColor" Color="#FFFEFEFE"/>
     <SolidColorBrush x:Key="LineFill" Color="Black"/>
     <SolidColorBrush x:Key="ChartBackgroundColor" Color="White"/>
+    <SolidColorBrush x:Key="LegendMouseOver" Color="#11000000"/>
+    <SolidColorBrush x:Key="LegendPressed" Color="#22000000"/>
 
     <!--文字顏色-->
     <SolidColorBrush x:Key="TextColor" Color="Black"/>

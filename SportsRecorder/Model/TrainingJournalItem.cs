@@ -1,11 +1,4 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.ObjectModel;
 
 namespace SportsRecorder.Model
 {
@@ -89,7 +82,15 @@ namespace SportsRecorder.Model
             get => _durationMin;
             set
             {
-                _durationMin = value;
+                if (value > 1440)
+                {
+                    _durationMin = 1440;
+                }
+                else
+                {
+                    _durationMin = value;
+                }
+
                 OnPropertyChanged(nameof(DurationMin));
             }
         }

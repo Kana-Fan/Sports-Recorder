@@ -1,17 +1,8 @@
 ﻿
 using SportsRecorder.Model;
 using SportsRecorder.Services;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media.Imaging;
 
 namespace SportsRecorder.ViewModel
 {
@@ -65,26 +56,39 @@ namespace SportsRecorder.ViewModel
             new() { Title = "資料管理", Key = "data", IconKey = "Data"},
         };
 
+        private bool _isNavCollapsed = false;
+        public bool IsNavCollapsed
+        {
+            get => _isNavCollapsed;
+            set => SetProperty(ref _isNavCollapsed, value);
+        }
+
         // 切換內容
         private void NavigateTo(string key)
         {
             if (CurrentPage.CheckHasChanged() == true)
             {
                 _dialogService.ShowMessage("有未儲存的變更，請儲存後再切換頁面");
+                return;
             }
-            else
+
+            // 若舊頁面有訂閱外部事件，在這裡 Dispose
+            if (CurrentPage is IDisposable disposable)
             {
-                CurrentPage = key switch
-                {
-                    "journal" => new TrainingJournalViewModel(),
-                    "cardio" => new CardioViewModel(),
-                    "strength" => new StrengthViewModel(),
-                    "stats-cardio" => new StatsCardioViewModel(),
-                    "stats-strength" => new StatsStrengthViewModel(),
-                    "data" => new DataManagementViewModel(),
-                    _ => CurrentPage
-                };
+                disposable.Dispose();
             }
+
+            CurrentPage = key switch
+            {
+                "journal" => new TrainingJournalViewModel(),
+                "cardio" => new CardioViewModel(),
+                "strength" => new StrengthViewModel(),
+                "stats-cardio" => new StatsCardioViewModel(),
+                "stats-strength" => new StatsStrengthViewModel(),
+                "data" => new DataManagementViewModel(),
+                _ => CurrentPage
+            };
+
         }
 
         public override bool CheckHasChanged()
