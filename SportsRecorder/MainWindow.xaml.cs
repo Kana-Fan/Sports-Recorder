@@ -1,6 +1,7 @@
 ﻿using SportsRecorder.Model;
-using SportsRecorder.ViewModel;
 using SportsRecorder.Services;
+using SportsRecorder.ViewModel;
+using System.ComponentModel;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -96,7 +97,7 @@ namespace SportsRecorder
             ExpandAnimation();
         }
 
-        private void ExpandAnimation()
+        private void ExpandAnimation(Action onCompleted = null)
         {
             bool expanding = Vm.IsNavCollapsed; // 即將展開
 
@@ -110,7 +111,7 @@ namespace SportsRecorder
             {
                 From = fromWidth,
                 To = toWidth,
-                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
+                Duration = new Duration(TimeSpan.FromMilliseconds(200)),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
             };
 
@@ -123,11 +124,15 @@ namespace SportsRecorder
                     SyncSelection(_selectedNavItem);
                 }
 
+                onCompleted?.Invoke();
             };
 
             NavPanel.BeginAnimation(Border.WidthProperty, anim);
 
-            Vm.IsNavCollapsed = !Vm.IsNavCollapsed;
+            if (onCompleted == null)
+            {
+                Vm.IsNavCollapsed = !Vm.IsNavCollapsed;
+            }
         }
 
         private void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
@@ -148,7 +153,10 @@ namespace SportsRecorder
             if (Vm.IsNavCollapsed && parent == null && item.Children?.Count > 0)
             {
                 _selectedNavItem = item;
-                ExpandAnimation();
+                ExpandAnimation(onCompleted: () =>
+                {
+                    Vm.IsNavCollapsed = !Vm.IsNavCollapsed;
+                });
 
                 return;
             }
@@ -245,6 +253,11 @@ namespace SportsRecorder
                 _dialogService.ShowMessage("有未儲存的變更，請儲存後再關閉");
                 e.Cancel = true;
             }
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            ThemeService.ThemeChanged -= RebuildNavForTheme;
         }
 
         private void ChangeModeButton_Click(object sender, RoutedEventArgs e)

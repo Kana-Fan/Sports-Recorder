@@ -34,23 +34,29 @@ namespace SportsRecorder.Views
 
         public void SaveChartWithLegend(FrameworkElement element, string filePath)
         {
-            // 取得元素的實際寬度與高度
-            double width = element.ActualWidth;
-            double height = element.ActualHeight;
+            double width = scroll_viewer.ScrollableWidth + scroll_viewer.ActualWidth;
+            double height = scroll_viewer.ScrollableHeight + scroll_viewer.ActualHeight;
 
-            // 建立 RenderTargetBitmap
+            width = Math.Max(width, element.ActualWidth);
+            height = Math.Max(height, element.ActualHeight);
+
             RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
-                (int)width, (int)height, 96d, 96d, PixelFormats.Pbgra32);
+                (int)Math.Ceiling(width), (int)Math.Ceiling(height),
+                96d, 96d, PixelFormats.Pbgra32);
 
-            // 重新繪製元素（包含圖例與圖表）
-            element.Measure(new Size((int)width, (int)height));
-            element.Arrange(new Rect(new Size((int)width, (int)height)));
+            // 暫時以完整大小排列，截圖後還原
+            double originalHeight = element.ActualHeight;
+            double originalWidth = element.ActualWidth;
+
+            element.Measure(new Size(width, height));
+            element.Arrange(new Rect(0, 0, width, height));
             renderBitmap.Render(element);
 
-            // 編碼為 PNG 檔案
+            // 還原佈局，避免 UI 跑版
+            element.Arrange(new Rect(0, 0, originalWidth, originalHeight));
+
             PngBitmapEncoder encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(renderBitmap));
-
             using (FileStream fileStream = new FileStream(filePath, FileMode.Create))
             {
                 encoder.Save(fileStream);

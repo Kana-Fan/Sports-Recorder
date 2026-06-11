@@ -24,7 +24,10 @@ namespace SportsRecorder.Services
         public static DrawMarginFrame BuildMarginFrame(SKColor AxisColor) => new() { Stroke = new SolidColorPaint(AxisColor) { StrokeThickness = 2 } };
 
         // 建立 XAxes（DateTimeAxis）
-        public static ICartesianAxis[] BuildDateTimeXAxes(SKColor AxisColor) =>
+        public static ICartesianAxis[] BuildDateTimeXAxes(
+            SKColor AxisColor,
+            DateTime? minDate = null,
+            DateTime? maxDate = null) =>
             [
                 new DateTimeAxis(TimeSpan.FromDays(1), date => date.ToString("MM/dd"))
                 {
@@ -32,7 +35,9 @@ namespace SportsRecorder.Services
                     SeparatorsPaint    = new SolidColorPaint(SepColor),
                     SeparatorsAtCenter = false,
                     TicksPaint         = new SolidColorPaint(ZeroColor),
-                    TicksAtCenter      = true
+                    TicksAtCenter      = true,
+                    MinLimit           = (double)minDate?.AddHours(-16).Ticks,
+                    MaxLimit           = (double)maxDate?.AddHours(16).Ticks,
                 }
             ];
 

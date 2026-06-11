@@ -15,8 +15,6 @@ namespace SportsRecorder.ViewModel
 {
     public class DataManagementViewModel : BaseViewModel
     {
-        private readonly IDialogService _dialogService;
-
         private string OpenFileType = "";
 
         private ObservableCollection<TrainingJournalItem> NewRecords;
@@ -54,8 +52,6 @@ namespace SportsRecorder.ViewModel
 
         public DataManagementViewModel()
         {
-            _dialogService = new DialogService();
-
             // Commands
             OpenFileCommand = new RelayCommand(() =>
             {

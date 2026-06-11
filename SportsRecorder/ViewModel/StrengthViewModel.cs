@@ -13,8 +13,6 @@ namespace SportsRecorder.ViewModel
     {
         private const string FileName = "StrengthTypes.json";
 
-        private readonly IDialogService _dialogService;
-
         public ICollectionView FilteredItems { get; set; } // 篩選用
 
         private ObservableCollection<StrengthItem> _strengthTypes; // 全部的資料
@@ -42,20 +40,6 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        private bool _hasChange;
-        public bool HasChange
-        {
-            get => _hasChange;
-            set
-            {
-                _hasChange = value;
-                OnPropertyChanged(nameof(HasChange));
-
-                // 通知 WPF 重新檢查 SaveCommand 的狀態
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
         // 判斷集合是否為空或數量為 0
         public bool IsDataEmpty
         {
@@ -72,8 +56,6 @@ namespace SportsRecorder.ViewModel
 
         public StrengthViewModel()
         {
-            _dialogService = new DialogService();
-
             _strengthTypes = JsonStorageService.Load<ObservableCollection<StrengthItem>>(FileName); // 讀存檔
 
             _strengthTypes = new ObservableCollection<StrengthItem>(_strengthTypes.OrderBy(x => x.BodyPart)); // 把一樣的排在一起
@@ -83,10 +65,7 @@ namespace SportsRecorder.ViewModel
             FilteredItems.Filter = FilterItems;
 
             // 初始化時，為現有的所有項目訂閱事件
-            foreach (var item in StrengthTypes)
-            {
-                item.PropertyChanged += Item_PropertyChanged;
-            }
+            AddPropertyChanged();
 
             // 監聽集合的變化（新增、刪除、排序）
             StrengthTypes.CollectionChanged += (s, e) => UpdateDirtyState();
@@ -95,6 +74,7 @@ namespace SportsRecorder.ViewModel
             AddEntryCommand = new RelayCommand(() =>
             {
                 StrengthTypes.Insert(0, new StrengthItem { BodyPart = SearchText, Name = "" });
+                AddPropertyChanged();
                 UpdateDirtyState();
                 OnPropertyChanged(nameof(IsDataEmpty));
             });
@@ -148,6 +128,15 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        private void AddPropertyChanged()
+        {
+            foreach (var item in StrengthTypes)
+            {
+                item.PropertyChanged -= Item_PropertyChanged;
+                item.PropertyChanged += Item_PropertyChanged;
+            }
+        }
+
         // 當任何一個 StrengthItem 的數值改變時，都會觸發這裡
         private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -164,11 +153,6 @@ namespace SportsRecorder.ViewModel
 
             // 更新狀態，這會觸發 UI 按鈕的啟用/停用
             HasChange = currentJson != oldJson;
-        }
-
-        public override bool CheckHasChanged()
-        {
-            return HasChange;
         }
     }
 }

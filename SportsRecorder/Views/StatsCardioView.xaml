@@ -8,13 +8,14 @@
              xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:services="clr-namespace:SportsRecorder.Services"
+             xmlns:helpers="clr-namespace:SportsRecorder.Helpers"
              mc:Ignorable="d"
              d:DesignHeight="1000" d:DesignWidth="800">
     <UserControl.DataContext>
         <vm:StatsCardioViewModel/>
     </UserControl.DataContext>
 
-    <Grid Name="ChartContainer" Margin="0,0,0,5">
+    <Grid Margin="0,0,0,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="auto"/>
@@ -40,18 +41,40 @@
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="20"/>
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Rectangle Grid.Row="0" Grid.ColumnSpan="5" Style="{StaticResource TitleDividerLine}"/>
+            <Rectangle Grid.Row="0" Grid.ColumnSpan="7" Style="{StaticResource TitleDividerLine}"/>
 
             <TextBlock Grid.Row="1" Grid.Column="0" Text="起始日期" Style="{StaticResource Subheading}"/>
             <TextBlock Grid.Row="1" Grid.Column="2" Text="結束日期" Style="{StaticResource Subheading}"/>
-            <TextBlock Grid.Row="1" Grid.Column="4" Text="{Binding TotalTxt}" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="1" Grid.Column="4" Text="總運動天數" Style="{StaticResource Subheading}"/>
+            <TextBlock Grid.Row="1" Grid.Column="6" Text="{Binding TotalTxt}" Style="{StaticResource Subheading}"/>
 
-            <DatePicker Grid.Row="2" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}"/>
-            <DatePicker Grid.Row="2" Grid.Column="2" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}"/>
-            <TextBlock Grid.Row="2" Grid.Column="4" Style="{StaticResource Subheading}" Text="{Binding TotalData}"/>
+            <DatePicker Grid.Row="2" Grid.Column="0" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding StartDate, Mode=TwoWay}">
+                <DatePicker.CalendarStyle>
+                    <Style TargetType="Calendar"
+                           BasedOn="{StaticResource CustomCalendarStyle}">
+                        <Setter Property="helpers:CalendarMarker.HasRecordDates"
+                                Value="{Binding HasRecord}"/>
+                    </Style>
+                </DatePicker.CalendarStyle>
+            </DatePicker>
+
+            <DatePicker Grid.Row="2" Grid.Column="2" Style="{StaticResource CustomDatePicker}" SelectedDate="{Binding EndDate, Mode=TwoWay}">
+                <DatePicker.CalendarStyle>
+                    <Style TargetType="Calendar"
+                           BasedOn="{StaticResource CustomCalendarStyle}">
+                        <Setter Property="helpers:CalendarMarker.HasRecordDates"
+                                Value="{Binding HasRecord}"/>
+                    </Style>
+                </DatePicker.CalendarStyle>
+            </DatePicker>
+
+            <TextBlock Grid.Row="2" Grid.Column="4" Style="{StaticResource Subheading}" Text="{Binding TotalDay}"/>
+            <TextBlock Grid.Row="2" Grid.Column="6" Style="{StaticResource Subheading}" Text="{Binding TotalData}"/>
 
             <Button Grid.Row="2" Grid.Column="3"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -63,11 +86,11 @@
                 <Image Style="{StaticResource ImageStyle}" Source="{DynamicResource Refresh}"/>
             </Button>
 
-            <Rectangle Grid.Row="3" Grid.ColumnSpan="5" Style="{StaticResource DividerLine}"/>
+            <Rectangle Grid.Row="3" Grid.ColumnSpan="7" Style="{StaticResource DividerLine}"/>
         </Grid>
 
         <ScrollViewer x:Name="scroll_viewer" Grid.Row="2" VerticalScrollBarVisibility="Auto">
-            <Grid>
+            <Grid Name="ChartContainer" Background="{DynamicResource BackgroundColor}" Margin="5">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="auto"/>
@@ -89,6 +112,7 @@
                         <TextBlock Grid.Row="0"  Text="{Binding SheetTitle}" Style="{StaticResource Subheading}" HorizontalAlignment="Center"/>
 
                         <lvc:CartesianChart Grid.Row="1"
+                                            MinHeight="300"
                                             Series="{Binding SelectRecord}"
                                             XAxes="{Binding XAxes}"
                                             YAxes="{Binding YAxes}"

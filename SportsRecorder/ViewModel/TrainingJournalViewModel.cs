@@ -8,23 +8,8 @@ using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel
 {
-    internal class TrainingJournalViewModel : BaseViewModel
+    internal class TrainingJournalViewModel : TrainingRecordsViewModel
     {
-        private readonly IDialogService _dialogService;
-        private static readonly string FileName = "records.json";
-
-        // 全部的資料
-        private ObservableCollection<TrainingJournalItem> _records;
-        public ObservableCollection<TrainingJournalItem> Records
-        {
-            get => _records;
-            set
-            {
-                _records = value;
-                OnPropertyChanged(nameof(Records));
-            }
-        }
-
         // 部位與運動的對應字典
         public Dictionary<string, List<string>> StrengthTypes { get; set; }
 
@@ -99,20 +84,6 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        private bool _hasChange;
-        public bool HasChange
-        {
-            get => _hasChange;
-            set
-            {
-                _hasChange = value;
-                OnPropertyChanged(nameof(HasChange));
-
-                // 通知 WPF 重新檢查 SaveCommand 的狀態
-                CommandManager.InvalidateRequerySuggested();
-            }
-        }
-
         public bool IsCardio => SelectedType == ExerciseType.Cardio;
         public bool IsStrength => SelectedType == ExerciseType.Strength;
 
@@ -140,10 +111,6 @@ namespace SportsRecorder.ViewModel
 
         public TrainingJournalViewModel()
         {
-            _dialogService = new DialogService();
-
-            Records = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>(FileName); // 讀存檔
-
             CardioTypes = GetCardioTypes();
 
             StrengthTypes = GetStrengthTypes();
@@ -151,6 +118,8 @@ namespace SportsRecorder.ViewModel
             BodyTypes = StrengthTypes.Keys.ToList();
 
             LoadOrCreateLog(DateTime.Today);
+
+            RefreshHasRecord();
 
             // 初始化時，為現有的所有項目訂閱事件
             foreach (var item in Records)
@@ -242,7 +211,7 @@ namespace SportsRecorder.ViewModel
             // CurrentLog 可能已被清掉，重新載入
             LoadOrCreateLog(SelectedDate);
 
-            if (JsonStorageService.Save(Records, FileName))
+            if (JsonStorageService.Save(Records, RecordsFileName))
             {
                 _dialogService.ShowMessage("儲存成功並刪除空的運動！");
                 HasChange = false;
@@ -340,20 +309,16 @@ namespace SportsRecorder.ViewModel
 
         private void UpdateDirtyState()
         {
-            ObservableCollection<TrainingJournalItem> oldCardioTypes = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>(FileName);
+            ObservableCollection<TrainingJournalItem> oldCardioTypes = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>(RecordsFileName);
 
             string currentJson = JsonSerializer.Serialize(Records);
             string oldJson = JsonSerializer.Serialize(oldCardioTypes);
 
             RecalculateTotalDuration();
+            RefreshHasRecord();
 
             // 更新狀態，這會觸發 UI 按鈕的啟用/停用
             HasChange = currentJson != oldJson;
-        }
-
-        public override bool CheckHasChanged()
-        {
-            return HasChange;
         }
     }
 

@@ -1,6 +1,5 @@
 ﻿
 using SportsRecorder.Model;
-using SportsRecorder.Services;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -8,8 +7,6 @@ namespace SportsRecorder.ViewModel
 {
     public class MainViewModel : BaseViewModel
     {
-        private readonly IDialogService _dialogService;
-
         private ObservableCollection<NavigationItem> _navItems;
         public ObservableCollection<NavigationItem> NavItems
         {
@@ -32,8 +29,6 @@ namespace SportsRecorder.ViewModel
 
         public MainViewModel()
         {
-            _dialogService = new DialogService();
-
             NavItems = BuildNavItems();
             CurrentPage = new TrainingJournalViewModel();
 
@@ -66,7 +61,7 @@ namespace SportsRecorder.ViewModel
         // 切換內容
         private void NavigateTo(string key)
         {
-            if (CurrentPage.CheckHasChanged() == true)
+            if (CurrentPage.HasChange == true)
             {
                 _dialogService.ShowMessage("有未儲存的變更，請儲存後再切換頁面");
                 return;
@@ -91,9 +86,9 @@ namespace SportsRecorder.ViewModel
 
         }
 
-        public override bool CheckHasChanged()
+        public bool CheckHasChanged()
         {
-            return CurrentPage.CheckHasChanged();
+            return CurrentPage.HasChange;
         }
     }
 }

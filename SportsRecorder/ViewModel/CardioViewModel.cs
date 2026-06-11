@@ -10,7 +10,6 @@ namespace SportsRecorder.ViewModel
 {
     internal class CardioViewModel : BaseViewModel
     {
-        private readonly IDialogService _dialogService;
         private const string FileName = "CardioTypes.json";
 
         private ObservableCollection<CardioItem> _cardioTypes; // 全部的資料
@@ -22,20 +21,6 @@ namespace SportsRecorder.ViewModel
                 _cardioTypes = value;
                 OnPropertyChanged(nameof(CardioTypes));
                 OnPropertyChanged(nameof(IsDataEmpty));
-            }
-        }
-
-        private bool _hasChange;
-        public bool HasChange
-        {
-            get => _hasChange;
-            set
-            {
-                _hasChange = value;
-                OnPropertyChanged(nameof(HasChange));
-
-                // 通知 WPF 重新檢查 SaveCommand 的狀態
-                CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -55,17 +40,12 @@ namespace SportsRecorder.ViewModel
 
         public CardioViewModel()
         {
-            _dialogService = new DialogService();
-
             HasChange = false;
 
             CardioTypes = JsonStorageService.Load<ObservableCollection<CardioItem>>(FileName); // 讀存檔
 
             // 初始化時，為現有的所有項目訂閱事件
-            foreach (var item in CardioTypes)
-            {
-                item.PropertyChanged += Item_PropertyChanged;
-            }
+            AddPropertyChanged();
 
             // 監聽集合的變化（新增、刪除、排序）
             CardioTypes.CollectionChanged += (s, e) => UpdateDirtyState();
@@ -73,6 +53,7 @@ namespace SportsRecorder.ViewModel
             AddEntryCommand = new RelayCommand(() =>
             {
                 CardioTypes.Insert(0, new CardioItem());
+                AddPropertyChanged();
                 UpdateDirtyState();
                 OnPropertyChanged(nameof(IsDataEmpty));
             });
@@ -108,6 +89,15 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        private void AddPropertyChanged()
+        {
+            foreach (var item in CardioTypes)
+            {
+                item.PropertyChanged -= Item_PropertyChanged;
+                item.PropertyChanged += Item_PropertyChanged;
+            }
+        }
+
         // 當任何一個 CardioItem 的數值改變時，都會觸發這裡
         private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -124,11 +114,6 @@ namespace SportsRecorder.ViewModel
 
             // 更新狀態，這會觸發 UI 按鈕的啟用/停用
             HasChange = currentJson != oldJson;
-        }
-
-        public override bool CheckHasChanged()
-        {
-            return HasChange;
         }
     }
 }

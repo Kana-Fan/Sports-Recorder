@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Input;
+using DocumentFormat.OpenXml.Bibliography;
 using LiveChartsCore;
 using LiveChartsCore.Defaults;
 using LiveChartsCore.Kernel.Sketches;
@@ -13,10 +14,8 @@ using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel
 {
-    internal class StatsStrengthViewModel : BaseViewModel, IDisposable
+    internal class StatsStrengthViewModel : StatsViewModelBase
     {
-        private readonly IDialogService _dialogService;
-
         private static readonly SKColor[] DarkPalette =
         [
             new SKColor(0x4D, 0x72, 0xC8), // 靛藍
@@ -87,8 +86,6 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        private ObservableCollection<TrainingJournalItem> Records { get; set; } // 全部的資料
-
         // 區間內的資料(直方圖用，一筆就是日期跟各部位的總重量)
         private ISeries[] _selectRecord;
         public ISeries[] SelectRecord
@@ -126,60 +123,6 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        // 開始日期
-        private DateTime _startDate = DateTime.Today.AddDays(-7);
-        public DateTime StartDate
-        {
-            get => _startDate;
-            set
-            {
-                SetProperty(ref _startDate, value);
-                // 如果區間<7 就強制 = 7
-                if ((EndDate - StartDate).Days < 7)
-                {
-                    _endDate = StartDate.AddDays(7);
-                    OnPropertyChanged(nameof(EndDate));
-                    _dialogService.ShowMessage("~已自動調整為最小 7 天區間~");
-                }
-                // 如果區間>30 就強制 = 30
-                else if ((EndDate - StartDate).Days > 30)
-                {
-                    _endDate = StartDate.AddDays(30);
-                    OnPropertyChanged(nameof(EndDate));
-                    _dialogService.ShowMessage("~已自動調整為最大 30 天區間~");
-                }
-
-                GetData();
-            }
-        }
-
-        // 結束日期
-        private DateTime _endDate = DateTime.Today;
-        public DateTime EndDate
-        {
-            get => _endDate;
-            set
-            {
-                SetProperty(ref _endDate, value);
-                // 如果區間<7 就強制 = 7
-                if ((EndDate - StartDate).Days < 7)
-                {
-                    _startDate = EndDate.AddDays(-7);
-                    OnPropertyChanged(nameof(StartDate));
-                    _dialogService.ShowMessage("~已自動調整為最小 7 天區間~");
-                }
-                // 如果區間>30 就強制 = 30
-                else if ((EndDate - StartDate).Days > 30)
-                {
-                    _startDate = EndDate.AddDays(-30);
-                    OnPropertyChanged(nameof(StartDate));
-                    _dialogService.ShowMessage("~已自動調整為最大 30 天區間~");
-                }
-
-                GetData();
-            }
-        }
-
         // 判斷集合是否為空或數量為 0
         public bool IsDataEmpty
         {
@@ -198,27 +141,6 @@ namespace SportsRecorder.ViewModel
         }
 
         // 背景線條顏色
-        private DrawMarginFrame _drawMarginFrame;
-        public DrawMarginFrame DrawMarginFrame
-        {
-            get => _drawMarginFrame;
-            set => SetProperty(ref _drawMarginFrame, value);
-        }
-
-        private ICartesianAxis[] _xAxes;
-        public ICartesianAxis[] XAxes
-        {
-            get => _xAxes;
-            set => SetProperty(ref _xAxes, value);
-        }
-
-        private ICartesianAxis[] _yAxes;
-        public ICartesianAxis[] YAxes
-        {
-            get => _yAxes;
-            set => SetProperty(ref _yAxes, value);
-        }
-
         private DrawMarginFrame _lineDrawMarginFrame;
         public DrawMarginFrame LineDrawMarginFrame
         {
@@ -240,29 +162,16 @@ namespace SportsRecorder.ViewModel
             set => SetProperty(ref _lineYAxes, value);
         }
 
-        private SKColor _axisColor = ThemeService.AxisColor;
-        public SKColor AxisColor
-        {
-            get => _axisColor;
-            set => SetProperty(ref _axisColor, value);
-        }
-
         // Commands
         public ICommand BodyPartToggleSeries { get; }
         public ICommand ExercisesToggleSeries { get; }
         public ICommand SwitchSheet { get; }
-        public ICommand Refresh { get; }
 
         public StatsStrengthViewModel()
         {
-            _dialogService = new DialogService();
-
-            Records = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>("records.json");
-
             InitChart();
             GetData();
-
-            ThemeService.ThemeChanged += ChangeColor;
+            RefreshHasRecord(needCardios: false);
 
             BodyPartToggleSeries = new RelayCommand<string>(name =>
             {
@@ -341,25 +250,14 @@ namespace SportsRecorder.ViewModel
                 _bodyPartVisibleSeries.Clear();
                 UpdateLineChart(_lastStrengthRecords, NowBodyPart);
             });
-
-            Refresh = new RelayCommand(() =>
-            {
-                _startDate = DateTime.Today.AddDays(-7);
-                _endDate = DateTime.Today;
-
-                OnPropertyChanged(nameof(StartDate));
-                OnPropertyChanged(nameof(EndDate));
-
-                GetData();
-
-                _dialogService.ShowMessage("~已恢復到這一周~");
-            });
         }
 
         private void GetData()
         {
             // 初始化折線圖資料
             ClearLinechart();
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
+            LineXAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
 
             //  篩選區間內的紀錄
             var strengthRecords =
@@ -368,6 +266,8 @@ namespace SportsRecorder.ViewModel
                 r.Date.Date >= StartDate.Date && r.Date.Date <= EndDate.Date &&
                 r.Strengths != null && r.Strengths.Count > 0)
                 .ToList();
+
+            TotalDay = $"{strengthRecords.Count} / {(EndDate - StartDate).Days} 天";
 
             var allBodyParts = strengthRecords
                .SelectMany(r => r.Strengths)
@@ -574,31 +474,31 @@ namespace SportsRecorder.ViewModel
             }).ToArray();
         }
 
-        public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MM/dd");
         public Func<double, string> YAxisLabeler { get; set; } = value => $"{value:N0} kg";
         public Func<double, string> LineYAxisLabeler { get; set; } = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
 
-        private void InitChart()
+        protected override void OnDateRangeChanged()
+        {
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
+            LineXAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
+            GetData();
+        }
+
+        protected override void OnRefresh()
+        {
+            GetData();
+        }
+
+        protected override void InitChart()
         {
             DrawMarginFrame = ChartTheme.BuildMarginFrame(AxisColor);
-            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor);
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
             YAxes = ChartTheme.BuildYAxes(YAxisLabeler, AxisColor);
 
             LineDrawMarginFrame = ChartTheme.BuildMarginFrame(AxisColor);
-            LineXAxes = ChartTheme.BuildDateTimeXAxes(AxisColor);
+            LineXAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
             LineYAxes = ChartTheme.BuildYAxes(LineYAxisLabeler, AxisColor);
             UpdateBarChart(_lastAllBodyParts);
-        }
-
-        private void ChangeColor()
-        {
-            AxisColor = ThemeService.AxisColor;
-            InitChart();
-        }
-
-        public void Dispose()
-        {
-            ThemeService.ThemeChanged -= ChangeColor;
         }
     }
 }

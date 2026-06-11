@@ -10,7 +10,7 @@
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
-        Height="200" Width="400">
+        SizeToContent="WidthAndHeight">
     <Border Background="{DynamicResource BackgroundColor}" CornerRadius="12"
             BorderBrush="{DynamicResource TextColor}" BorderThickness="1">
         <StackPanel Margin="24" VerticalAlignment="Center">
@@ -18,7 +18,7 @@
 
             <TextBlock x:Name="MessageText" Style="{StaticResource Subheading}"  HorizontalAlignment="Center"/>
 
-            <Grid Margin="10">
+            <Grid Margin="10" Width="300">
                 <Button x:Name="CancelButton" Content="取消" Style="{StaticResource PrimaryButton}" Click="CancelButton_Click" HorizontalAlignment="Left"/>
                 <Button x:Name="ConfirmButton" Content="確認" Style="{StaticResource PrimaryButton}" Click="ConfirmButton_Click" Background="#FFA04545"  HorizontalAlignment="Right"/>
             </Grid>

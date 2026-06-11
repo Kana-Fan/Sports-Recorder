@@ -1,6 +1,15 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!--日歷顏色定義-->
+    <SolidColorBrush x:Key="CalBg"          Color="#FF202020"/>
+    <SolidColorBrush x:Key="CalAccent"      Color="#FF5A5A5A"/>
+    <SolidColorBrush x:Key="CalText"        Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="CalTextMuted"   Color="#55FFFFFF"/>
+    <SolidColorBrush x:Key="CalHeaderText"  Color="#88FFFFFF"/>
+    <SolidColorBrush x:Key="CalHover"       Color="#FF3E3E3E"/>
+
     <!--背景顏色-->
     <SolidColorBrush x:Key="BackgroundColor" Color="#FF272727"/>
     <SolidColorBrush x:Key="NavBackgroundColor" Color="#FF202020"/>

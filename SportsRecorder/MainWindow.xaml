@@ -15,7 +15,8 @@
         Icon="{DynamicResource Strength}"
         Height="700" Width="1000"
         MinHeight="700" MinWidth="1000"
-        Closing="Window_Closing">
+        Closing="Window_Closing"
+        Closed="Window_Closed">
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
@@ -92,7 +93,8 @@
                                         <Style TargetType="TextBlock">
                                             <Setter Property="Visibility" Value="Visible"/>
                                             <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DataContext.IsNavCollapsed, RelativeSource={RelativeSource AncestorType=TreeView}}"
+                                                <DataTrigger Binding="{Binding DataContext.IsNavCollapsed,
+                                                             RelativeSource={RelativeSource AncestorType=TreeView}}"
                                                              Value="True">
                                                     <Setter Property="Visibility" Value="Collapsed"/>
                                                 </DataTrigger>

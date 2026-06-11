@@ -12,10 +12,8 @@ using System.Windows.Input;
 
 namespace SportsRecorder.ViewModel
 {
-    class StatsCardioViewModel : BaseViewModel, IDisposable
+    class StatsCardioViewModel : StatsViewModelBase
     {
-        private readonly IDialogService _dialogService;
-
         private static bool _sheetIsTime = true;
 
         private static readonly SKColor[] DarkPalette =
@@ -43,8 +41,6 @@ namespace SportsRecorder.ViewModel
             get => _legendItems;
             set => SetProperty(ref _legendItems, value);
         }
-
-        private ObservableCollection<TrainingJournalItem> Records { get; set; } // 全部的資料
 
         private string _sheetTitle;
         public string SheetTitle
@@ -95,60 +91,6 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        // 開始日期
-        private DateTime _startDate = DateTime.Today.AddDays(-7);
-        public DateTime StartDate
-        {
-            get => _startDate;
-            set
-            {
-                SetProperty(ref _startDate, value);
-                // 如果區間<7 就強制 = 7
-                if ((EndDate - StartDate).Days < 7)
-                {
-                    _endDate = StartDate.AddDays(7);
-                    OnPropertyChanged(nameof(EndDate));
-                    _dialogService.ShowMessage("~已自動調整為最小 7 天區間~");
-                }
-                // 如果區間>30 就強制 = 30
-                else if ((EndDate - StartDate).Days > 30)
-                {
-                    _endDate = StartDate.AddDays(30);
-                    OnPropertyChanged(nameof(EndDate));
-                    _dialogService.ShowMessage("~已自動調整為最大 30 天區間~");
-                }
-
-                GetData();
-            }
-        }
-
-        // 結束日期
-        private DateTime _endDate = DateTime.Today;
-        public DateTime EndDate
-        {
-            get => _endDate;
-            set
-            {
-                SetProperty(ref _endDate, value);
-                // 如果區間<7 就強制 = 7
-                if ((EndDate - StartDate).Days < 7)
-                {
-                    _startDate = EndDate.AddDays(-7);
-                    OnPropertyChanged(nameof(StartDate));
-                    _dialogService.ShowMessage("~已自動調整為最小 7 天區間~");
-                }
-                // 如果區間>30 就強制 = 30
-                else if ((EndDate - StartDate).Days > 30)
-                {
-                    _startDate = EndDate.AddDays(-30);
-                    OnPropertyChanged(nameof(StartDate));
-                    _dialogService.ShowMessage("~已自動調整為最大 30 天區間~");
-                }
-
-                GetData();
-            }
-        }
-
         // 判斷集合是否為空或數量為 0
         public bool IsDataEmpty
         {
@@ -158,54 +100,18 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        // 背景線條顏色
-        private DrawMarginFrame _drawMarginFrame;
-        public DrawMarginFrame DrawMarginFrame
-        {
-            get => _drawMarginFrame;
-            set => SetProperty(ref _drawMarginFrame, value);
-        }
-
-        private ICartesianAxis[] _xAxes;
-        public ICartesianAxis[] XAxes
-        {
-            get => _xAxes;
-            set => SetProperty(ref _xAxes, value);
-        }
-
-        private ICartesianAxis[] _yAxes;
-        public ICartesianAxis[] YAxes
-        {
-            get => _yAxes;
-            set => SetProperty(ref _yAxes, value);
-        }
-
-        private SKColor _axisColor = ThemeService.AxisColor;
-        public SKColor AxisColor
-        {
-            get => _axisColor;
-            set => SetProperty(ref _axisColor, value);
-        }
-
         // Commands
         public ICommand SwitchSheet { get; }
 
         public ICommand ToggleSeries { get; }
 
-        public ICommand Refresh { get; }
-
         public StatsCardioViewModel()
         {
-            _dialogService = new DialogService();
-
-            Records = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>("records.json");
-
             SheetTitle = "每日運動總時間";
 
             InitChart();
             GetData();
-
-            ThemeService.ThemeChanged += ChangeColor;
+            RefreshHasRecord(needStrengths: false);
 
             SwitchSheet = new RelayCommand(() =>
             {
@@ -237,25 +143,13 @@ namespace SportsRecorder.ViewModel
 
                 UpdateBarChart(_lastCardioRecords);
             });
-
-            Refresh = new RelayCommand(() =>
-            {
-                _startDate = DateTime.Today.AddDays(-7);
-                _endDate = DateTime.Today;
-
-                OnPropertyChanged(nameof(StartDate));
-                OnPropertyChanged(nameof(EndDate));
-
-                SheetTitle = "每日運動總時間";
-                GetData();
-
-                _dialogService.ShowMessage("~已恢復到這一周~");
-            });
         }
 
         // 獲取期間內的有氧運動資料與總運動時間
         private void GetData()
         {
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
+
             SheetTitle = _sheetIsTime ? "每日運動總時間" : "每日運動總距離";
 
             YAxisLabeler = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
@@ -276,16 +170,18 @@ namespace SportsRecorder.ViewModel
 
             _lastCardioRecords = cardioRecords;
 
-            if (cardioRecords.Count == 0)
-            {
-                _dialogService.ShowMessage("還沒有運動紀錄喔~ 快去運動吧");
-            }
+            TotalDay = $"{cardioRecords.Count} / {(EndDate - StartDate).Days} 天";
 
             // 區間內的資料（直方圖用：日期 + 各運動時間or 各運動距離)
             UpdateBarChart(cardioRecords);
 
             // 區間內的總運動類型（表格用：同名有氧合併加總）
             UpdateSheet(cardioRecords);
+
+            if (cardioRecords.Count == 0)
+            {
+                _dialogService.ShowMessage("還沒有運動紀錄喔~ 快去運動吧");
+            }
         }
 
         private void UpdateBarChart(List<TrainingJournalItem> cardioRecords)
@@ -375,7 +271,7 @@ namespace SportsRecorder.ViewModel
                     .Append(new LegendItem
                     {
                         Name = "每日總計",
-                        Color = "#A1A7CC", // 你折線的顏色
+                        Color = "#A1A7CC", // 折線的顏色
                         IsVisible = _visibleSeries.Count > 0 && _visibleSeries.Contains("每日總計")
                     })
                 );
@@ -399,30 +295,31 @@ namespace SportsRecorder.ViewModel
             );
         }
 
-        public Func<DateTime, string> Formatter { get; set; } = date => date.ToString("MM/dd");
-
         public Func<double, string> YAxisLabeler { get; set; } = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
 
         /// <summary>
         /// 把統計圖的設定改成用程式碼設定
         /// </summary>
-        private void InitChart()
+        protected override void OnDateRangeChanged()
+        {
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
+            GetData();
+        }
+
+        protected override void OnRefresh()
+        {
+            SheetTitle = "每日運動總時間";
+            _sheetIsTime = true;
+            GetData();
+
+        }
+
+        protected override void InitChart()
         {
             DrawMarginFrame = ChartTheme.BuildMarginFrame(AxisColor);
-            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor);
+            XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
             YAxes = ChartTheme.BuildYAxes(YAxisLabeler, AxisColor);
             UpdateBarChart(_lastCardioRecords);
-        }
-
-        private void ChangeColor()
-        {
-            AxisColor = ThemeService.AxisColor;
-            InitChart();
-        }
-
-        public void Dispose()
-        {
-            ThemeService.ThemeChanged -= ChangeColor;
         }
     }
 }

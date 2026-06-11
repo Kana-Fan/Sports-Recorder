@@ -1,10 +1,21 @@
-﻿using System.ComponentModel;
+﻿using SportsRecorder.Model;
+using SportsRecorder.Services;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
 
 namespace SportsRecorder
 {
     public abstract class BaseViewModel : INotifyPropertyChanged
     {
+        protected readonly IDialogService _dialogService;
+
+        protected BaseViewModel()
+        {
+            _dialogService = new DialogService();
+        }
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string? name = null)
@@ -23,9 +34,23 @@ namespace SportsRecorder
             return true;
         }
 
-        public virtual bool CheckHasChanged()
+        private bool _hasChange;
+        public bool HasChange
         {
-            return false;
+            get => _hasChange;
+            set
+            {
+                if (_hasChange == value)
+                {
+                    return;
+                }
+
+                _hasChange = value;
+                OnPropertyChanged(nameof(HasChange));
+
+                // 通知 WPF 重新檢查 SaveCommand 的狀態
+                CommandManager.InvalidateRequerySuggested();
+            }
         }
     }
 }
