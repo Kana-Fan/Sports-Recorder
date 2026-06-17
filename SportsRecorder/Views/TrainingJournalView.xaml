@@ -91,7 +91,8 @@
                         <DataGridTemplateColumn.CellEditingTemplate>
                             <!--編輯狀態：顯示 ComboBox-->
                             <DataTemplate>
-                                <ComboBox SelectedItem="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource DarkComboBoxStyleBase}">
+                                <ComboBox SelectedItem="{Binding Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                          Style="{StaticResource DarkComboBoxStyleBase}">
                                     <ComboBox.ItemsSource>
                                         <MultiBinding Converter="{StaticResource BodyPartToNamesConverter}">
                                             <Binding Path="BodyPart"/>
@@ -165,12 +166,27 @@
             </DatePicker>
 
             <TextBlock Grid.Row="0" Grid.Column="2" Text="運動類型" Style="{StaticResource Subheading}"/>
+
             <ComboBox Grid.Row="1" Grid.Column="2"
                       ItemsSource="{Binding ExerciseTypeOptions}"
                       SelectedValue="{Binding SelectedType, Mode=TwoWay}"
                       SelectedValuePath="Value"
-                      DisplayMemberPath="DisplayName"
-                      Style="{StaticResource DarkComboBoxStyle}"/>
+                      Style="{StaticResource DarkComboBoxStyle}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Ellipse Width="8" Height="8" Margin="0,0,5,0" VerticalAlignment="Center">
+                                <Ellipse.Fill>
+                                    <SolidColorBrush Color="{Binding DotColor}"/>
+                                </Ellipse.Fill>
+                            </Ellipse>
+                            <TextBlock Text="{Binding DisplayName}"
+                                       Foreground="{DynamicResource TextColor}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
             <!-- 只有有氧時才顯示 -->
             <StackPanel Grid.Row="0" Grid.Column="4" Grid.RowSpan="2">
                 <StackPanel.Style>

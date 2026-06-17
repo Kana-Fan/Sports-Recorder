@@ -59,6 +59,8 @@
                            BasedOn="{StaticResource CustomCalendarStyle}">
                         <Setter Property="helpers:CalendarMarker.HasRecordDates"
                                 Value="{Binding HasRecord}"/>
+                        <Setter Property="helpers:CalendarMarker.SecondaryDate"
+                                Value="{Binding EndDate}"/>
                     </Style>
                 </DatePicker.CalendarStyle>
             </DatePicker>
@@ -69,6 +71,8 @@
                            BasedOn="{StaticResource CustomCalendarStyle}">
                         <Setter Property="helpers:CalendarMarker.HasRecordDates"
                                 Value="{Binding HasRecord}"/>
+                        <Setter Property="helpers:CalendarMarker.SecondaryDate"
+                                Value="{Binding StartDate}"/>
                     </Style>
                 </DatePicker.CalendarStyle>
             </DatePicker>
@@ -135,7 +139,8 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <ToggleButton IsChecked="{Binding IsVisible}"
-                                              Command="{Binding DataContext.ToggleSeries, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              Command="{Binding DataContext.ToggleSeries,
+                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                               CommandParameter="{Binding Name}"
                                               Style="{StaticResource LegendToggleButton}">
                                     <StackPanel Orientation="Horizontal">

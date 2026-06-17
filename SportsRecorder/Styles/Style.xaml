@@ -495,20 +495,12 @@
                             <Setter TargetName="Root"
                                 Property="Background"
                                 Value="{DynamicResource LegendMouseOver}"/>
+                            <Setter TargetName="Root" Property="Opacity" Value="0.7"/>
                         </Trigger>
 
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Root" Property="Background" Value="{DynamicResource LegendPressed}"/>
                         </Trigger>
-
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsChecked" Value="False"/>
-                                <Condition Property="IsMouseOver" Value="True"/>
-                            </MultiTrigger.Conditions>
-                            <Setter TargetName="Root" Property="Opacity" Value="0.7"/>
-                            <Setter TargetName="Root" Property="Background" Value="{DynamicResource LegendMouseOver}"/>
-                        </MultiTrigger>
 
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Root"
@@ -814,6 +806,10 @@
                         <Ellipse x:Name="SelectedBg"
                              Fill="{DynamicResource CalAccent}"
                              Opacity="0"/>
+                        <!-- 第二選取背景（顯示用） -->
+                        <Ellipse x:Name="SecondaryBg"
+                                 Fill="{DynamicResource CalAccent}"
+                                 Opacity="0"/>
 
                         <!-- 日期數字 -->
                         <TextBlock x:Name="DayText"
@@ -876,6 +872,12 @@
                                            RelativeSource={RelativeSource Self}}"
                                      Value="True">
                             <Setter TargetName="StrengthDot" Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <!-- 第二選取日 -->
+                        <DataTrigger Binding="{Binding Path=(helpers:CalendarMarker.IsSecondarySelected),
+                                        RelativeSource={RelativeSource Self}}"
+                                     Value="True">
+                            <Setter TargetName="SecondaryBg" Property="Opacity" Value="0.45"/>
                         </DataTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -993,7 +995,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="CalendarItem">
                     <ControlTemplate.Resources>
-                        <DataTemplate x:Key="DayTitleTemplate">
+                        <DataTemplate x:Key="{x:Static CalendarItem.DayTitleTemplateResourceKey}">
                             <TextBlock Text="{Binding}"
                                        FontSize="11"
                                        FontWeight="SemiBold"

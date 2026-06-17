@@ -43,7 +43,7 @@ namespace SportsRecorder.Model
     // 有氧運動的一筆資料
     public class Cardio : ExerciseEntryBase
     {
-        private string _name = "";// 運動名稱
+        private string _name = "-選擇運動名稱-";// 運動名稱
         public string Name
         {
             get => _name;
@@ -99,20 +99,20 @@ namespace SportsRecorder.Model
     // 重量訓練的一筆資料
     public class Strength : ExerciseEntryBase
     {
-        private string _bodyPart = ""; // 訓練部位
+        private string _bodyPart = "-選擇部位-"; // 訓練部位
         public string BodyPart
         {
             get => _bodyPart;
             set
             {
                 _bodyPart = value;
-                _name = "";
+                _name = "-選擇訓練名稱-";
                 OnPropertyChanged(nameof(Name));
                 OnPropertyChanged(nameof(BodyPart));
             }
         }
 
-        private string _name = ""; // 訓練名稱
+        private string _name = "-選擇訓練名稱-"; // 訓練名稱
         public string Name
         {
             get => _name;

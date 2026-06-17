@@ -117,6 +117,8 @@ namespace SportsRecorder.ViewModel
             });
         }
 
+        protected abstract void ClearSelectionLegend();
+
         // 日期區間改變後，子類補做的事（更新 axes、重跑 GetData 等）
         protected abstract void OnDateRangeChanged();
 

@@ -16,8 +16,8 @@ namespace SportsRecorder.ViewModel
         // 暴露給 ComboBox 用的選項清單
         public ObservableCollection<ExerciseTypeOption> ExerciseTypeOptions { get; } = new ObservableCollection<ExerciseTypeOption>
         {
-            new ExerciseTypeOption("有氧運動", ExerciseType.Cardio),
-            new ExerciseTypeOption("重量訓練", ExerciseType.Strength),
+            new ExerciseTypeOption("有氧運動", ExerciseType.Cardio,   "#FF43A047"),
+            new ExerciseTypeOption("重量訓練", ExerciseType.Strength, "#EF5350"),
         };
 
         // 有氧運動的類型
@@ -182,14 +182,14 @@ namespace SportsRecorder.ViewModel
             foreach (var record in Records)
             {
                 var emptyCardios = record.Cardios?
-                    .Where(c => string.IsNullOrWhiteSpace(c.Name)).ToList() ?? [];
+                    .Where(c => c.Name == "-選擇運動名稱-").ToList() ?? [];
                 foreach (var c in emptyCardios)
                 {
                     record.Cardios.Remove(c);
                 }
 
                 var emptyStrengths = record.Strengths?
-                    .Where(s => string.IsNullOrWhiteSpace(s.BodyPart) || string.IsNullOrWhiteSpace(s.Name)).ToList() ?? [];
+                    .Where(s => s.BodyPart == "-選擇部位-" || s.Name == "-選擇訓練名稱-").ToList() ?? [];
                 foreach (var s in emptyStrengths)
                 {
                     record.Strengths.Remove(s);
@@ -213,6 +213,7 @@ namespace SportsRecorder.ViewModel
 
             if (JsonStorageService.Save(Records, RecordsFileName))
             {
+                OnPropertyChanged(nameof(IsDataEmpty));
                 _dialogService.ShowMessage("儲存成功並刪除空的運動！");
                 HasChange = false;
             }
@@ -326,11 +327,13 @@ namespace SportsRecorder.ViewModel
     {
         public string DisplayName { get; }
         public ExerciseType Value { get; }
+        public string DotColor { get; }
 
-        public ExerciseTypeOption(string displayName, ExerciseType value)
+        public ExerciseTypeOption(string displayName, ExerciseType value, string dotColor)
         {
             DisplayName = displayName;
             Value = value;
+            DotColor = dotColor;
         }
 
         public override string ToString() => DisplayName;

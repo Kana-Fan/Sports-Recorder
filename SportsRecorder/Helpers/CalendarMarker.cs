@@ -72,6 +72,56 @@ namespace SportsRecorder.Helpers
         public static bool GetHasStrength(DependencyObject obj)
             => (bool)obj.GetValue(HasStrengthProperty);
 
+        // 綁定到 Calendar，標記第二個顯示日期
+        public static readonly DependencyProperty SecondaryDateProperty =
+            DependencyProperty.RegisterAttached(
+                "SecondaryDate",
+                typeof(DateTime?),
+                typeof(CalendarMarker),
+                new PropertyMetadata(null, OnSecondaryDateChanged));
+
+        public static void SetSecondaryDate(DependencyObject obj, DateTime? value)
+            => obj.SetValue(SecondaryDateProperty, value);
+
+        public static DateTime? GetSecondaryDate(DependencyObject obj)
+            => (DateTime?)obj.GetValue(SecondaryDateProperty);
+
+        private static void OnSecondaryDateChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is not Calendar calendar)
+            {
+                return;
+            }
+
+            calendar.Loaded -= Calendar_Loaded;
+            calendar.Loaded += Calendar_Loaded;
+
+            calendar.DisplayDateChanged -= Calendar_DisplayDateChanged;
+            calendar.DisplayDateChanged += Calendar_DisplayDateChanged;
+
+            calendar.DisplayModeChanged -= Calendar_DisplayModeChanged;
+            calendar.DisplayModeChanged += Calendar_DisplayModeChanged;
+
+            if (calendar.IsLoaded)
+            {
+                UpdateDayButtons(calendar);
+            }
+
+        }
+
+        public static readonly DependencyProperty IsSecondarySelectedProperty =
+            DependencyProperty.RegisterAttached(
+                "IsSecondarySelected",
+                typeof(bool),
+                typeof(CalendarMarker),
+                new PropertyMetadata(false));
+
+        public static void SetIsSecondarySelected(DependencyObject obj, bool value)
+            => obj.SetValue(IsSecondarySelectedProperty, value);
+
+        public static bool GetIsSecondarySelected(DependencyObject obj)
+            => (bool)obj.GetValue(IsSecondarySelectedProperty);
+
         // ── 事件處理 ──
         // 資料來源變更時重新訂閱事件
         private static void OnHasRecordDatesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -142,6 +192,7 @@ namespace SportsRecorder.Helpers
         private static void UpdateDayButtons(Calendar calendar)
         {
             var dict = GetHasRecordDates(calendar);
+            var secondary = GetSecondaryDate(calendar);
 
             foreach (var button in GetVisualDescendants<CalendarDayButton>(calendar))
             {
@@ -149,6 +200,7 @@ namespace SportsRecorder.Helpers
                 {
                     button.SetValue(HasCardioProperty, false);
                     button.SetValue(HasStrengthProperty, false);
+                    button.SetValue(IsSecondarySelectedProperty, false);
                     continue;
                 }
 
@@ -162,6 +214,9 @@ namespace SportsRecorder.Helpers
                     button.SetValue(HasCardioProperty, false);
                     button.SetValue(HasStrengthProperty, false);
                 }
+
+                button.SetValue(IsSecondarySelectedProperty,
+                    secondary.HasValue && date.Date == secondary.Value.Date);
             }
         }
 

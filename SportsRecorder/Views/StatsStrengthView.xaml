@@ -56,6 +56,8 @@
                            BasedOn="{StaticResource CustomCalendarStyle}">
                         <Setter Property="helpers:CalendarMarker.HasRecordDates"
                                 Value="{Binding HasRecord}"/>
+                        <Setter Property="helpers:CalendarMarker.SecondaryDate"
+                                Value="{Binding EndDate}"/>
                     </Style>
                 </DatePicker.CalendarStyle>
             </DatePicker>
@@ -66,6 +68,8 @@
                            BasedOn="{StaticResource CustomCalendarStyle}">
                         <Setter Property="helpers:CalendarMarker.HasRecordDates"
                                 Value="{Binding HasRecord}"/>
+                        <Setter Property="helpers:CalendarMarker.SecondaryDate"
+                                Value="{Binding StartDate}"/>
                     </Style>
                 </DatePicker.CalendarStyle>
             </DatePicker>
@@ -184,17 +188,18 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <ToggleButton IsChecked="{Binding IsVisible}"
-                                            Command="{Binding DataContext.ExercisesToggleSeries,RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                            CommandParameter="{Binding Name}"
-                                            Style="{StaticResource LegendToggleButton}">
+                                              Command="{Binding DataContext.ExercisesToggleSeries,
+                                              RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding Name}"
+                                              Style="{StaticResource LegendToggleButton}">
                                     <StackPanel Orientation="Horizontal">
                                         <!-- SVG 圖案 -->
-                                        <Viewbox Width="16" Height="16"
-                                                Margin="0,0,5,0"
-                                                VerticalAlignment="Center">
+                                        <Viewbox Width="10" Height="10"
+                                                 Margin="0,0,5,0"
+                                                 VerticalAlignment="Center">
                                             <Path Data="{Binding SvgPath}"
-                                                Stretch="Uniform"
-                                                StrokeThickness="1.5">
+                                                  Stretch="Uniform"
+                                                  StrokeThickness="2">
                                                 <Path.Fill>
                                                     <SolidColorBrush Color="{Binding Color}"/>
                                                 </Path.Fill>

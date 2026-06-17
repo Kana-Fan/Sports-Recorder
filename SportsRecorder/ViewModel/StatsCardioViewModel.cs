@@ -138,6 +138,7 @@ namespace SportsRecorder.ViewModel
 
                 foreach (var item in LegendItems)
                 {
+                    // 綁定到按鈕的IsChecked上
                     item.IsVisible = _visibleSeries.Count > 0 && !_visibleSeries.Contains(item.Name);
                 }
 
@@ -297,12 +298,22 @@ namespace SportsRecorder.ViewModel
 
         public Func<double, string> YAxisLabeler { get; set; } = _sheetIsTime ? value => $"{value:N0} min" : value => $"{value:N2} km";
 
+        protected override void ClearSelectionLegend()
+        {
+            _visibleSeries.Clear();
+            foreach (var item in LegendItems)
+            {
+                item.IsVisible = false;
+            }
+        }
+
         /// <summary>
         /// 把統計圖的設定改成用程式碼設定
         /// </summary>
         protected override void OnDateRangeChanged()
         {
             XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
+            ClearSelectionLegend();
             GetData();
         }
 
@@ -310,8 +321,8 @@ namespace SportsRecorder.ViewModel
         {
             SheetTitle = "每日運動總時間";
             _sheetIsTime = true;
+            ClearSelectionLegend();
             GetData();
-
         }
 
         protected override void InitChart()

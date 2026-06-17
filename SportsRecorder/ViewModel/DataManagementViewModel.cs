@@ -151,6 +151,8 @@ namespace SportsRecorder.ViewModel
 
             saveFileDialog.Filter = "JSON檔案 (*.json)|*.json|Excel檔案 (*.xlsx)|*.xlsx";
 
+            saveFileDialog.FileName = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+
             if (saveFileDialog.ShowDialog() == false)
             {
                 return;

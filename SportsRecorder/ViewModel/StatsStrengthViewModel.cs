@@ -37,8 +37,6 @@ namespace SportsRecorder.ViewModel
             "M 0 -10 L 10 0 L 0 10 L -10 0 Z",                                            // 菱形
             "M 0 -10 L 10 8 L -10 8 Z",                                                   // 三角形
             "M 0 -10 L 2.5 -3 L 10 -3 L 4 2 L 6 10 L 0 6 L -6 10 L -4 2 L -10 -3 L -2.5 -3 Z", // 星形
-            "M -10 0 L 10 0 M 0 -10 L 0 10",                                              // 十字
-            "M -8 -8 L 8 8 M 8 -8 L -8 8",                                               // X形
             "M 0 -10 L 3 -3 L 10 -3 L 5 2 L 7 10 L 0 5 L -7 10 L -5 2 L -10 -3 L -3 -3 Z", // 八角星
             "M -5 -10 L 5 -10 L 10 0 L 5 10 L -5 10 L -10 0 Z",                          // 六邊形
             "M 0 -10 L 6 -6 L 10 0 L 6 6 L 0 10 L -6 6 L -10 0 L -6 -6 Z",             // 八邊形
@@ -175,22 +173,20 @@ namespace SportsRecorder.ViewModel
 
             BodyPartToggleSeries = new RelayCommand<string>(name =>
             {
+                ClearLinechart();
+
                 if (_bodyPartVisibleSeries.Contains(name))
                 {
                     _bodyPartVisibleSeries.Clear(); // 再點一次 → 全顯示
-                    ClearLinechart();
                 }
                 else
                 {
                     _bodyPartVisibleSeries.Clear();
                     _bodyPartVisibleSeries.Add(name); // 換成新選的
 
-                    if (NowBodyPart != name)
-                    {
-                        // 每個訓練動作的重量變化
-                        NowBodyPart = name;
-                        UpdateLineChart(_lastStrengthRecords, NowBodyPart);
-                    }
+                    // 每個訓練動作的重量變化
+                    NowBodyPart = name;
+                    UpdateLineChart(_lastStrengthRecords, NowBodyPart);
                 }
 
                 foreach (var item in BodyPartLegendItems)
@@ -242,7 +238,7 @@ namespace SportsRecorder.ViewModel
                 }
 
                 LineChartTitle = _lineIsWeight ? "各部位運動每日最大訓練重量" : _lineIsSet ? "各部位運動每日組數" : "各部位運動每日次數";
-                LineYAxisLabeler = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
+                LineYAxisLabeler = _lineIsWeight ? value => $"{value:N0} kg" : _lineIsSet ? value => $"{value:N0} 組" : value => $"{value:N0} 次";
 
                 if (LineYAxes?[0] is Axis yAxis)
                     yAxis.Labeler = LineYAxisLabeler;
@@ -463,29 +459,43 @@ namespace SportsRecorder.ViewModel
 
             return Enumerable.Range(0, count).Select(i =>
             {
-                float tV = 55f + (40f / Math.Max(count - 1, 1)) * i;  // 55~95
-                float tS = 100f - (50f / Math.Max(count - 1, 1)) * i; // 100~50
+                float ratio = (float)i / Math.Max(count - 1, 1);
 
-                // 色相微偏移，讓每條線略有區分（±15度範圍內）
-                float hShift = (i % 2 == 0 ? 1 : -1) * (i / 2) * 8f;
+                float tV = 70f + 25f * ratio;   // 70~95
+                float tS = 95f - 35f * ratio;   // 95~60
+
+                // 色相微偏移，讓每條線略有區分）
+                float hShift = (i % 2 == 0 ? 1 : -1) * (i / 2) * 20f;
                 float newH = (h + hShift + 360f) % 360f;
 
-                return SKColor.FromHsv(newH, Math.Clamp(tS, 40f, 100f), Math.Clamp(tV, 50f, 100f));
+                return SKColor.FromHsv(newH, Math.Clamp(tS, 40f, 100f), Math.Clamp(tV, 30f, 100f));
             }).ToArray();
         }
 
         public Func<double, string> YAxisLabeler { get; set; } = value => $"{value:N0} kg";
-        public Func<double, string> LineYAxisLabeler { get; set; } = _lineIsWeight ? value => $"{value:N0} kg" : value => $"{value:N0} 次";
+        public Func<double, string> LineYAxisLabeler { get; set; } = _lineIsWeight ?
+            value => $"{value:N0} kg" : _lineIsSet ? value => $"{value:N0} 組" : value => $"{value:N0} 次";
+
+        protected override void ClearSelectionLegend()
+        {
+            _bodyPartVisibleSeries.Clear();
+            foreach (var item in BodyPartLegendItems)
+            {
+                item.IsVisible = _bodyPartVisibleSeries.Contains(item.Name);
+            }
+        }
 
         protected override void OnDateRangeChanged()
         {
             XAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
             LineXAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
+            ClearSelectionLegend();
             GetData();
         }
 
         protected override void OnRefresh()
         {
+            ClearSelectionLegend();
             GetData();
         }
 
