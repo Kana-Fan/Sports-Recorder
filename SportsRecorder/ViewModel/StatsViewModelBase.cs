@@ -99,6 +99,14 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        public bool IsThisWeek
+        {
+            get
+            {
+                return EndDate == DateTime.Today && StartDate == DateTime.Today.AddDays(-7);
+            }
+        }
+
         // --- Commands ---
         public ICommand Refresh { get; }
 
@@ -106,15 +114,19 @@ namespace SportsRecorder.ViewModel
         {
             ThemeService.ThemeChanged += OnThemeChanged;
 
-            Refresh = new RelayCommand(() =>
-            {
-                _startDate = DateTime.Today.AddDays(-7);
-                _endDate = DateTime.Today;
-                OnPropertyChanged(nameof(StartDate));
-                OnPropertyChanged(nameof(EndDate));
-                OnRefresh();
-                _dialogService.ShowMessage("~已恢復到這一周~");
-            });
+            Refresh = new RelayCommand(execute: ExecuteRefresh, canExecute: CanExecuteRefresh);
+        }
+
+        private bool CanExecuteRefresh() => !IsThisWeek;
+
+        private void ExecuteRefresh()
+        {
+            _startDate = DateTime.Today.AddDays(-7);
+            _endDate = DateTime.Today;
+            OnPropertyChanged(nameof(StartDate));
+            OnPropertyChanged(nameof(EndDate));
+            OnRefresh();
+            _dialogService.ShowMessage("~已恢復到這一周~");
         }
 
         protected abstract void ClearSelectionLegend();

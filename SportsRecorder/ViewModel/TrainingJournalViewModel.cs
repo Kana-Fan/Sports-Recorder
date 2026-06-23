@@ -104,10 +104,19 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        public bool IsToday
+        {
+            get
+            {
+                return SelectedDate == DateTime.Today;
+            }
+        }
+
         // Commands
         public ICommand AddEntryCommand { get; }
         public ICommand DeleteEntryCommand { get; }
         public ICommand SaveCommand { get; }
+        public ICommand Refresh { get; }
 
         public TrainingJournalViewModel()
         {
@@ -174,6 +183,20 @@ namespace SportsRecorder.ViewModel
             });
 
             SaveCommand = new RelayCommand(execute: ExecuteSave, canExecute: () => HasChange);
+
+            Refresh = new RelayCommand(execute: ExecuteRefresh, canExecute: CanExecuteRefresh);
+        }
+
+        private bool CanExecuteRefresh() => !IsToday;
+
+        private void ExecuteRefresh()
+        {
+            SelectedDate = DateTime.Today;
+
+            if (!HasChange)
+            {
+                _dialogService.ShowMessage("~已恢復到今日~");
+            }
         }
 
         private void ExecuteSave()

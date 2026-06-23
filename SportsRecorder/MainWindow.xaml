@@ -16,7 +16,8 @@
         Height="700" Width="1000"
         MinHeight="700" MinWidth="1000"
         Closing="Window_Closing"
-        Closed="Window_Closed">
+        Closed="Window_Closed"
+        WindowStartupLocation="CenterScreen">
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
