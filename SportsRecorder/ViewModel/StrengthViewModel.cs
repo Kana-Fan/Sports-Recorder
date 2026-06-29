@@ -110,6 +110,14 @@ namespace SportsRecorder.ViewModel
 
         private void ExecuteSave()
         {
+
+            var emptyStrengths = StrengthTypes
+                    .Where(x => x.Name == "" || x.BodyPart == "");
+            if (emptyStrengths.Any() && !_dialogService.Confirm("重量訓練有未填寫完的項目，確定要儲存(自動刪除未填寫完的)嗎?"))
+            {
+                return;
+            }
+
             StrengthTypes = new ObservableCollection<StrengthItem>(
                     StrengthTypes
                     .Where(x => x.Name != "" && x.BodyPart != ""));
@@ -118,7 +126,7 @@ namespace SportsRecorder.ViewModel
 
             if (JsonStorageService.Save(StrengthTypes, FileName))
             {
-                _dialogService.ShowMessage("儲存成功並刪除空的運動！");
+                _dialogService.ShowMessage("儲存成功並刪除未填寫完的運動！");
                 HasChange = false;
             }
 

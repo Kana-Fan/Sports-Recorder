@@ -19,7 +19,7 @@ namespace SportsRecorder.Services
         private static string GetDataFolder()
         {
             string basePath = AppDomain.CurrentDomain.BaseDirectory;
-            string dataFolder = Path.Combine(basePath, "Data");
+            string dataFolder = Path.Combine(basePath, "Assets", "Data");
 
             if (!Directory.Exists(dataFolder))
             {

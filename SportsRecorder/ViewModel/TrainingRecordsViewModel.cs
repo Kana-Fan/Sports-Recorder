@@ -31,6 +31,17 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        private List<int> _availableYears;
+        public List<int> AvailableYears
+        {
+            get => _availableYears;
+            private set
+            {
+                _availableYears = value;
+                OnPropertyChanged(nameof(AvailableYears));
+            }
+        }
+
         protected TrainingRecordsViewModel()
         {
             Records = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>(RecordsFileName);
@@ -56,6 +67,12 @@ namespace SportsRecorder.ViewModel
             }
 
             HasRecord = dict;
+
+            AvailableYears = Records
+                .Select(r => r.Date.Year)
+                .Distinct()
+                .OrderByDescending(y => y)
+                .ToList();
         }
     }
 }

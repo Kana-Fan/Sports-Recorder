@@ -9,8 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Data\CardioTypes.json" />
+    <None Remove="Assets\Data\StrengthTypes.json" />
     <None Remove="Assets\Fonts\LINESeedTW_TTF_Rg.ttf" />
     <None Remove="Assets\Icons\DarkMode\bar_chart.png" />
+    <None Remove="Assets\Icons\DarkMode\chart.png" />
     <None Remove="Assets\Icons\DarkMode\contract_edit.png" />
     <None Remove="Assets\Icons\DarkMode\database.png" />
     <None Remove="Assets\Icons\DarkMode\date.png" />
@@ -25,6 +28,7 @@
     <None Remove="Assets\Icons\dark_mode.png" />
     <None Remove="Assets\Icons\fitness_121040.ico" />
     <None Remove="Assets\Icons\LightMode\bar_chart.png" />
+    <None Remove="Assets\Icons\LightMode\chart.png" />
     <None Remove="Assets\Icons\LightMode\contract_edit.png" />
     <None Remove="Assets\Icons\LightMode\database.png" />
     <None Remove="Assets\Icons\LightMode\date.png" />
@@ -36,6 +40,7 @@
     <None Remove="Assets\Icons\LightMode\upload.png" />
     <None Remove="Assets\Icons\LightMode\vo2_max.png" />
     <None Remove="Assets\Icons\light_mode.png" />
+    <None Remove="Assets\Videos\Training.mp4" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +54,7 @@
   <ItemGroup>
     <Resource Include="Assets\Fonts\LINESeedTW_TTF_Rg.ttf" />
     <Resource Include="Assets\Icons\DarkMode\bar_chart.png" />
+    <Resource Include="Assets\Icons\DarkMode\chart.png" />
     <Resource Include="Assets\Icons\DarkMode\contract_edit.png" />
     <Resource Include="Assets\Icons\DarkMode\date.png" />
     <Resource Include="Assets\Icons\DarkMode\download.png" />
@@ -60,6 +66,7 @@
     <Resource Include="Assets\Icons\DarkMode\upload.png" />
     <Resource Include="Assets\Icons\DarkMode\vo2_max.png" />
     <Resource Include="Assets\Icons\LightMode\bar_chart.png" />
+    <Resource Include="Assets\Icons\LightMode\chart.png" />
     <Resource Include="Assets\Icons\LightMode\contract_edit.png" />
     <Resource Include="Assets\Icons\LightMode\dark_mode.png" />
     <Resource Include="Assets\Icons\fitness_121040.ico" />
@@ -68,6 +75,18 @@
 
   <ItemGroup>
     <EditorConfigFiles Remove="C:\Users\Jackson.YH.Fan\source\repos\WPF\SportsRecorder\SportsRecorder\.editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\Data\CardioTypes.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Data\StrengthTypes.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Videos\Training.mp4">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

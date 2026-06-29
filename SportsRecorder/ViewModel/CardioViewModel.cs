@@ -73,13 +73,21 @@ namespace SportsRecorder.ViewModel
 
         private void ExecuteSave()
         {
+
+            var emptyCardios = CardioTypes
+                    .Where(x => x.Name == "" || x.Description == "");
+            if (emptyCardios.Any() && !_dialogService.Confirm("有氧運動有未填寫完的項目，確定要儲存(自動刪除未填寫完的)嗎?"))
+            {
+                return;
+            }
+
             CardioTypes = new ObservableCollection<CardioItem>(
                     CardioTypes
                     .Where(x => x.Name != "" && x.Description != ""));
 
             if (JsonStorageService.Save(CardioTypes, FileName))
             {
-                _dialogService.ShowMessage("儲存成功並刪除空的運動！");
+                _dialogService.ShowMessage("儲存成功並刪除未填寫完的運動！");
                 HasChange = false;
             }
 

@@ -18,8 +18,15 @@
     </Style>
 
     <Style x:Key="ChartBorderStyle" TargetType="Border" BasedOn="{StaticResource PageBorderStyle}">
+        <Setter Property="BorderBrush" Value="{DynamicResource TextColor}"/>
         <Setter Property="Background" Value="{DynamicResource ChartBackgroundColor}"/>
         <Setter Property="Margin" Value="15"/>
+    </Style>
+
+    <Style x:Key="HeatMapBorderStyle" TargetType="Border" BasedOn="{StaticResource PageBorderStyle}">
+        <Setter Property="BorderBrush" Value="{DynamicResource TextColor}"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Margin" Value="20"/>
     </Style>
 
     <!--圖-->
@@ -56,7 +63,7 @@
     <!-- TreeViewItem 樣式 -->
     <Style x:Key="TreeViewItem" TargetType="TreeViewItem">
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="Padding" Value="0"/>
         <Setter Property="Margin" Value="0"/>
@@ -378,6 +385,7 @@
     <Style x:Key="ModernCell" TargetType="DataGridCell">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="FontSize" Value="17"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="BorderBrush" Value="Black"/>
         <Setter Property="Template">
@@ -403,11 +411,11 @@
         <Style.Triggers>
             <!-- 滑鼠移過時的背景色 -->
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="#FF4662D4" />
+                <Setter Property="Background" Value="{DynamicResource MouseOverBackgroundColor}"/>
             </Trigger>
             <!-- 當列被選取時的變化 -->
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#FF3453D2" />
+                <Setter Property="Background" Value="{DynamicResource SelectedBackgroundColor}" />
                 <Setter Property="FontWeight" Value="Bold" />
             </Trigger>
         </Style.Triggers>
@@ -441,14 +449,14 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="border"
                                     Property="Background"
-                                    Value="#357ABD"/>
+                                    Value="{DynamicResource MouseOverBackgroundColor}"/>
                         </Trigger>
 
                         <!-- 按下 -->
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="border"
                                     Property="Background"
-                                    Value="#2C5F99"/>
+                                    Value="{DynamicResource ButtonBackgroundColor}"/>
                         </Trigger>
 
                         <!-- 停用 -->
@@ -1009,7 +1017,7 @@
 
                     <Border Background="{DynamicResource CalBg}"
                             BorderBrush="Black"
-                            BorderThickness="1"
+                            BorderThickness="2"
                             CornerRadius="16"
                             Padding="14,12,14,14">
                         <Grid>

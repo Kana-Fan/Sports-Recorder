@@ -42,6 +42,9 @@
         <DataTemplate DataType="{x:Type vm:DataManagementViewModel}">
             <views:DataManagementView />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HeatMapViewModel}">
+            <views:HeatMapView />
+        </DataTemplate>
     </Window.Resources>
 
     <Grid Background="{DynamicResource NavBackgroundColor}">

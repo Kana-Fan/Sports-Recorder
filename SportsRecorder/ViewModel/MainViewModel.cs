@@ -1,5 +1,4 @@
-﻿
-using SportsRecorder.Model;
+﻿using SportsRecorder.Model;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -45,6 +44,7 @@ namespace SportsRecorder.ViewModel
             }},
             new() { Title = "統計圖表", Key = "stats", IconKey = "Stats", Children = new()
             {
+                new() { Title = "熱力圖", Key = "chart", IconKey = "Chart" },
                 new() { Title = "有氧", Key = "stats-cardio", IconKey = "Cardio" },
                 new() { Title = "重訓", Key = "stats-strength", IconKey = "Strength" },
             }},
@@ -81,6 +81,7 @@ namespace SportsRecorder.ViewModel
                 "stats-cardio" => new StatsCardioViewModel(),
                 "stats-strength" => new StatsStrengthViewModel(),
                 "data" => new DataManagementViewModel(),
+                "chart" => new HeatMapViewModel(),
                 _ => CurrentPage
             };
 

@@ -1,0 +1,75 @@
+﻿<UserControl x:Class="SportsRecorder.Views.HeatMapView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:SportsRecorder.Views"
+             xmlns:vm="clr-namespace:SportsRecorder.ViewModel"
+             xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+             xmlns:draw="clr-namespace:LiveChartsCore.SkiaSharpView.SKCharts;assembly=LiveChartsCore.SkiaSharpView"
+             mc:Ignorable="d"
+             d:DesignHeight="1000" d:DesignWidth="800">
+    <Grid Margin="0,0,0,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Image Source="{DynamicResource Stats}" Style="{StaticResource TitleImageStyle}"/>
+            <TextBlock Text="統計圖表 - 熱力圖" Style="{StaticResource Title}" />
+            <Image Source="{DynamicResource Chart}" Style="{StaticResource TitleImageStyle}"/>
+        </StackPanel>
+
+        <Rectangle Grid.Row="1" Style="{StaticResource TitleDividerLine}"/>
+
+        <!-- 年份選擇器 -->
+        <ComboBox Grid.Row="2"
+                  Width="100"
+                  HorizontalAlignment="Center"
+                  ItemsSource="{Binding AvailableYears}"
+                  SelectedItem="{Binding SelectedYear, Mode=TwoWay}"
+                  Style="{StaticResource DarkComboBoxStyle}"/>
+
+        <Rectangle Grid.Row="3" Style="{StaticResource DividerLine}"/>
+
+        <ScrollViewer x:Name="scroll_viewer" Grid.Row="4" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Cardio Heatmap -->
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{DynamicResource Cardio}" Style="{StaticResource TitleImageStyle}" Margin="20,5,5,5"/>
+                    <TextBlock Text="有氧運動 - 每日總運動時間" Style="{StaticResource Subheading}" />
+                </StackPanel>
+                <Border Style="{StaticResource HeatMapBorderStyle}">
+                    <lvc:CartesianChart
+                        Series="{Binding CardioSeries}"
+                        XAxes="{Binding XAxes}"
+                        YAxes="{Binding YAxes}"
+                        Height="300"
+                        TooltipPosition="Top"
+                        LegendPosition="Hidden"/>
+                </Border>
+
+                <Rectangle Style="{StaticResource DividerLine}"/>
+
+                <!-- Strength Heatmap -->
+                <StackPanel Orientation="Horizontal">
+                    <Image Source="{DynamicResource Strength}" Style="{StaticResource TitleImageStyle}" Margin="20,5,5,5"/>
+                    <TextBlock Text="重量訓練 - 每日總訓練量(重量*組數*次數)" Style="{StaticResource Subheading}" />
+                </StackPanel>
+                <Border Style="{StaticResource HeatMapBorderStyle}">
+                    <lvc:CartesianChart
+                            Series="{Binding StrengthSeries}"
+                            XAxes="{Binding XAxes}"
+                            YAxes="{Binding YAxes}"
+                            Height="300"
+                            TooltipPosition="Top"
+                            LegendPosition="Hidden"/>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

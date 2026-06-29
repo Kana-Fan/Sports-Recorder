@@ -25,8 +25,11 @@ namespace SportsRecorder.Views
 
         public void SaveChartWithLegend(FrameworkElement element, string filePath)
         {
-            double width = scroll_viewer.ExtentWidth;
-            double height = scroll_viewer.ExtentHeight;
+            double width = scroll_viewer.ScrollableWidth + scroll_viewer.ActualWidth;
+            double height = scroll_viewer.ScrollableHeight + scroll_viewer.ActualHeight;
+
+            width = Math.Max(width, element.ActualWidth);
+            height = Math.Max(height, element.ActualHeight);
 
             RenderTargetBitmap renderBitmap = new RenderTargetBitmap(
                 (int)Math.Ceiling(width), (int)Math.Ceiling(height),

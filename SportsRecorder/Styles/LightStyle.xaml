@@ -13,7 +13,7 @@
     <!--背景顏色-->
     <SolidColorBrush x:Key="BackgroundColor" Color="#FFFDFDFD"/>
     <SolidColorBrush x:Key="NavBackgroundColor" Color="#FFFAFAFA"/>
-    <SolidColorBrush x:Key="SelectedBackgroundColor" Color="#FFF1F1F1"/>
+    <SolidColorBrush x:Key="SelectedBackgroundColor" Color="Gainsboro"/>
     <SolidColorBrush x:Key="MouseOverBackgroundColor" Color="#EAECF6"/>
     <SolidColorBrush x:Key="SheetBackgroundColor" Color="#FFFAFAFA"/>
     <SolidColorBrush x:Key="RowBackgroundColor" Color="#FFECECEC"/>
@@ -42,4 +42,5 @@
     <BitmapImage x:Key="Mode" UriSource="/Assets/Icons/LightMode/dark_mode.png"/>
     <BitmapImage x:Key="Refresh" UriSource="/Assets/Icons/LightMode/refresh.png"/>
     <BitmapImage x:Key="Date" UriSource="/Assets/Icons/LightMode/date.png"/>
+    <BitmapImage x:Key="Chart"  UriSource="/Assets/Icons/LightMode/chart.png"/>
 </ResourceDictionary>

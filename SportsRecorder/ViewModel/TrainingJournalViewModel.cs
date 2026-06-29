@@ -76,6 +76,18 @@ namespace SportsRecorder.ViewModel
             get => _selectedType;
             set
             {
+                if (HasChange)
+                {
+                    _dialogService.ShowMessage("有未儲存的變更，請儲存後再切換類別");
+                    // 延遲通知，讓 WPF 本輪綁定完成後再還原 ComboBox
+                    System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+                    {
+                        OnPropertyChanged(nameof(SelectedType));
+                    }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+
+                    return;
+                }
+
                 SetProperty(ref _selectedType, value);
                 OnPropertyChanged(nameof(IsCardio));
                 OnPropertyChanged(nameof(IsStrength));
@@ -201,21 +213,36 @@ namespace SportsRecorder.ViewModel
 
         private void ExecuteSave()
         {
-            // 先清理各記錄內的空項目
+            // 檢查記錄內的空項目
             foreach (var record in Records)
             {
-                var emptyCardios = record.Cardios?
+                if (SelectedType == ExerciseType.Cardio)
+                {
+                    var emptyCardios = record.Cardios?
                     .Where(c => c.Name == "-選擇運動名稱-").ToList() ?? [];
-                foreach (var c in emptyCardios)
-                {
-                    record.Cardios.Remove(c);
-                }
+                    if (emptyCardios.Count() != 0 && !_dialogService.Confirm("有氧運動有未填寫完的項目，確定要儲存(自動刪除未填寫完的)嗎?"))
+                    {
+                        return;
+                    }
 
-                var emptyStrengths = record.Strengths?
-                    .Where(s => s.BodyPart == "-選擇部位-" || s.Name == "-選擇訓練名稱-").ToList() ?? [];
-                foreach (var s in emptyStrengths)
+                    foreach (var c in emptyCardios)
+                    {
+                        record.Cardios.Remove(c);
+                    }
+                }
+                else // Strengths
                 {
-                    record.Strengths.Remove(s);
+                    var emptyStrengths = record.Strengths?
+                        .Where(s => s.BodyPart == "-選擇部位-" || s.Name == "-選擇訓練名稱-").ToList() ?? [];
+                    if (emptyStrengths.Count() != 0 && !_dialogService.Confirm("重量訓練有未填寫完的項目，確定要儲存(自動刪除未填寫完的)嗎?"))
+                    {
+                        return;
+                    }
+
+                    foreach (var s in emptyStrengths)
+                    {
+                        record.Strengths.Remove(s);
+                    }
                 }
             }
 
@@ -237,7 +264,7 @@ namespace SportsRecorder.ViewModel
             if (JsonStorageService.Save(Records, RecordsFileName))
             {
                 OnPropertyChanged(nameof(IsDataEmpty));
-                _dialogService.ShowMessage("儲存成功並刪除空的運動！");
+                _dialogService.ShowMessage("儲存成功並刪除未填寫完的運動！");
                 HasChange = false;
             }
 

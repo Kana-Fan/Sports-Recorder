@@ -1,4 +1,7 @@
-﻿using LiveChartsCore.Kernel.Sketches;
+﻿using LiveChartsCore;
+using LiveChartsCore.Defaults;
+using LiveChartsCore.Drawing;
+using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SkiaSharp;
@@ -57,5 +60,77 @@ namespace SportsRecorder.Services
                     MinLimit           = 0
                 }
             ];
+
+        // 建立 Heatmap XAxes（月份標籤）
+        public static ICartesianAxis[] BuildHeatmapXAxes(string[] labels, SKColor axisColor) =>
+        [
+            new Axis
+            {
+                Labels           = labels,
+                LabelsPaint      = new SolidColorPaint(axisColor) { SKTypeface = FontFamily },
+                ShowSeparatorLines = false,
+                Position         = LiveChartsCore.Measure.AxisPosition.End, // Top
+                TicksPaint       = null,
+                TextSize = 11,
+                ForceStepToMin  = true,
+                MinStep         = 1,
+            }
+        ];
+
+        // 建立 Heatmap YAxes（星期標籤）
+        public static ICartesianAxis[] BuildHeatmapYAxes(SKColor axisColor) =>
+        [
+            new Axis
+            {
+                Labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+                LabelsPaint      = new SolidColorPaint(axisColor) { SKTypeface = FontFamily },
+                ShowSeparatorLines = false,
+                TicksPaint       = null,
+                SeparatorsPaint = null,
+                TextSize = 11,
+                IsInverted      = true,
+            }
+        ];
+
+        public static ISeries[] BuildHeatmapSeries(
+            List<WeightedPoint> points,
+            LvcColor[] heatMap,
+            Dictionary<(int, int), DateTime> dateMap,
+            bool IsCardio)
+        {
+            ISeries[] Series = [new HeatSeries<WeightedPoint>
+            {
+                Values = points,
+                HeatMap = heatMap,
+                ColorStops = [0, 0.001, 0.15, 0.3, 0.45, 0.62, 0.8, 1],
+                PointPadding = new LiveChartsCore.Drawing.Padding(2),
+                XToolTipLabelFormatter = point =>
+                {
+                    var wp = point.Model;
+                    int w = (int)(wp?.X ?? 0);
+                    int d = (int)(wp?.Y ?? 0);
+                    double val = wp?.Weight ?? 0;
+                    if (!dateMap.TryGetValue((w, d), out var date))
+                    {
+                        return string.Empty;
+                    }
+                    else if(IsCardio)
+                    {
+                        return val == 0
+                            ? $"{date:MMM d, yyyy}  No cardio"
+                            : $"{date:MMM d, yyyy}  {val:F0} min";
+                    }
+                    else
+                    {
+                        return val == 0
+                            ? $"{date:MMM d, yyyy}  No strength"
+                            : $"{date:MMM d, yyyy}  {val:F0} kg vol";
+                    }
+                },
+                YToolTipLabelFormatter = _ => string.Empty,
+            }];
+
+            return Series;
+        }
     }
 }

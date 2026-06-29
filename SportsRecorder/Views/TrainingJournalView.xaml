@@ -22,7 +22,7 @@
                       RowStyle="{StaticResource ModernRow}"
                       PreviewMouseWheel="mousewheel">
                 <DataGrid.Columns>
-                    <DataGridTemplateColumn Header="運動" Width="150">
+                    <DataGridTemplateColumn Header="運動" Width="2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <!-- 非編輯狀態：顯示文字 -->
                             <DataTemplate>
@@ -38,7 +38,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <s:DataGridNumericColumn Header="距離(km)" Width="*" Binding="{Binding DistanceKm, Mode=TwoWay}" AllowDecimal="True" MaxLength="10"/>
+                    <s:DataGridNumericColumn Header="距離(km)" Width="*" Binding="{Binding DistanceKm, Mode=TwoWay}" AllowDecimal="True" MaxLength="3"/>
                     <s:DataGridNumericColumn Header="時間(min)" Width="*" Binding="{Binding DurationMin, Mode=TwoWay}" MaxLength="4"/>
                     <DataGridTemplateColumn Header="操作" Width="100">
                         <DataGridTemplateColumn.CellTemplate>
@@ -64,7 +64,7 @@
                       PreviewMouseWheel="mousewheel">
                 <DataGrid.Columns>
                     <!-- 部位欄位 -->
-                    <DataGridTemplateColumn Header="部位" Width="100">
+                    <DataGridTemplateColumn Header="部位" Width="*">
                         <DataGridTemplateColumn.CellTemplate>
                             <!--非編輯狀態：顯示文字-->
                             <DataTemplate>
@@ -81,7 +81,7 @@
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
                     <!--運動名稱-->
-                    <DataGridTemplateColumn Header="運動" Width="180">
+                    <DataGridTemplateColumn Header="運動" Width="2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <!--非編輯狀態：顯示文字-->
                             <DataTemplate>
@@ -104,7 +104,7 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellEditingTemplate>
                     </DataGridTemplateColumn>
-                    <s:DataGridNumericColumn Header="重量(kg)" Width="2*" Binding="{Binding WeightKg, Mode=TwoWay}" AllowDecimal="True" MaxLength="5"/>
+                    <s:DataGridNumericColumn Header="重量(kg)" Width="*" Binding="{Binding WeightKg, Mode=TwoWay}" AllowDecimal="True" MaxLength="4"/>
                     <s:DataGridNumericColumn Header="組數" Width="*" Binding="{Binding Sets, Mode=TwoWay}" MaxLength="3"/>
                     <s:DataGridNumericColumn Header="次數" Width="*" Binding="{Binding Reps, Mode=TwoWay}" MaxLength="3"/>
                     <DataGridTemplateColumn Header="操作" Width="100">
