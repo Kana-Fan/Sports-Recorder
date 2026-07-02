@@ -16,7 +16,7 @@
         <StackPanel Margin="24" VerticalAlignment="Center">
             <TextBlock Text="╰（￣▽￣）╭" Style="{StaticResource Title}" HorizontalAlignment="Center" />
 
-            <TextBlock x:Name="MessageText" Style="{StaticResource Subheading}"  HorizontalAlignment="Center" TextWrapping="WrapWithOverflow"/>
+            <TextBlock x:Name="MessageText" Style="{StaticResource Subheading}"  HorizontalAlignment="Center" MaxWidth="500" TextWrapping="Wrap"/>
 
             <Button x:Name="ConfirmButton" Content="確認" Margin="10" Style="{StaticResource PrimaryButton}" Click="ConfirmButton_Click" />
         </StackPanel>

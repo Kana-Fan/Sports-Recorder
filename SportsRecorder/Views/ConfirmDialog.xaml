@@ -16,7 +16,7 @@
         <StackPanel Margin="24" VerticalAlignment="Center">
             <TextBlock Text="QAQ" Style="{StaticResource Title}" HorizontalAlignment="Center" />
 
-            <TextBlock x:Name="MessageText" Style="{StaticResource Subheading}"  HorizontalAlignment="Center"/>
+            <TextBlock x:Name="MessageText" Style="{StaticResource Subheading}"  HorizontalAlignment="Center" MaxWidth="500" TextWrapping="Wrap"/>
 
             <Grid Margin="10" Width="300">
                 <Button x:Name="CancelButton" Content="取消" Style="{StaticResource PrimaryButton}" Click="CancelButton_Click" HorizontalAlignment="Left"/>

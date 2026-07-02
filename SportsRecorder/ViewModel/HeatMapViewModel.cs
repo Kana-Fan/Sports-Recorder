@@ -85,9 +85,17 @@ namespace SportsRecorder.ViewModel
             private set => SetProperty(ref _yAxes, value);
         }
 
+        public bool IsDataEmpty
+        {
+            get
+            {
+                return AvailableYears.Count() == 0;
+            }
+        }
+
         public HeatMapViewModel()
         {
-            SelectedYear = DateTime.Today.Year;
+            SelectedYear = AvailableYears.Count() == 0 ? DateTime.Today.Year : AvailableYears[0];
 
             ThemeService.ThemeChanged += OnThemeChanged;
         }

@@ -86,7 +86,7 @@ namespace SportsRecorder.ViewModel
 
             if (OpenFileType == ".json")
             {
-                NewRecords = LoadJsonFile(FileName);
+                LoadJsonFile(FileName);
             }
 
             else // ".xlsx"
@@ -120,29 +120,67 @@ namespace SportsRecorder.ViewModel
             // 先把本來的資料做備份
             ObservableCollection<TrainingJournalItem> oldRecords = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>(recordFileName);
 
-            if (oldRecords != null && oldRecords.Count > 0 && JsonStorageService.Save(oldRecords, backupFileName))
+            if (oldRecords == null || oldRecords.Count == 0)
             {
-                _dialogService.ShowMessage("備份成功~");
-
-                if (_dialogService.Confirm("會覆蓋過往紀錄喔 確定要匯入紀錄嗎？"))
-                {
-                    // 把新的資料存進去
-                    if (JsonStorageService.Save(NewRecords, recordFileName))
-                    {
-                        _dialogService.ShowMessage("匯入成功~");
-                    }
-
-                    else
-                    {
-                        _dialogService.ShowMessage("匯入失敗，請稍後在試~");
-                    }
-                }
+                _dialogService.ShowMessage("沒有資料需要備份");
             }
-
+            else if (!JsonStorageService.Save(oldRecords, backupFileName))
+            {
+                _dialogService.ShowMessage("備份失敗，請稍後再試~");
+                return;
+            }
             else
             {
-                _dialogService.ShowMessage("備份失敗，請稍後在試~");
+                _dialogService.ShowMessage("備份成功~");
             }
+
+            if (!_dialogService.Confirm("確定要匯入紀錄嗎？"))
+            {
+                return;
+            }
+
+            bool overwrite = _dialogService.Confirm("要覆寫舊紀錄嗎？（選取消則合併新舊紀錄）");
+
+            ObservableCollection<TrainingJournalItem> recordsToSave =
+                overwrite ? NewRecords : MergeRecords(oldRecords, NewRecords);
+
+            if (JsonStorageService.Save(recordsToSave, recordFileName))
+            {
+                _dialogService.ShowMessage("匯入成功~");
+            }
+            else
+            {
+                _dialogService.ShowMessage("匯入失敗，請稍後再試~");
+            }
+        }
+
+        private ObservableCollection<TrainingJournalItem> MergeRecords(
+            ObservableCollection<TrainingJournalItem> oldRecords,
+            ObservableCollection<TrainingJournalItem> newRecords)
+        {
+            var merged = (oldRecords ?? Enumerable.Empty<TrainingJournalItem>())
+                .Concat(newRecords ?? Enumerable.Empty<TrainingJournalItem>())
+                .GroupBy(r => r.Date.Date)
+                .Select(g =>
+                {
+                    if (g.Count() == 1)
+                    {
+                        return g.First();
+                    }
+
+                    return new TrainingJournalItem
+                    {
+                        Date = g.Key,
+                        CardiosTotalDuration = g.Sum(r => r.CardiosTotalDuration),
+                        Cardios = new ObservableCollection<Cardio>(
+                            g.SelectMany(r => r.Cardios ?? Enumerable.Empty<Cardio>())),
+                        Strengths = new ObservableCollection<Strength>(
+                            g.SelectMany(r => r.Strengths ?? Enumerable.Empty<Strength>()))
+                    };
+                })
+                .OrderBy(r => r.Date);
+
+            return new ObservableCollection<TrainingJournalItem>(merged);
         }
 
         private void ExecuteDownloadFile()
@@ -194,65 +232,174 @@ namespace SportsRecorder.ViewModel
             }
         }
 
-        /// <summary>專門匯入Json（檔案不存在顯示錯誤訊息)</summary>
-        private ObservableCollection<TrainingJournalItem> LoadJsonFile(string filePath)
+        /// <summary>統一處理匯入時的例外，並重設 NewRecords</summary>
+        private void HandleImportException(Exception ex)
         {
-            var options = new JsonSerializerOptions
+            var message = ex switch
             {
-                PropertyNameCaseInsensitive = false,
-                AllowTrailingCommas = false,
-                ReadCommentHandling = JsonCommentHandling.Disallow,
-                UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
+                FileNotFoundException e => e.Message,
+                ArgumentException e => e.Message,
+                InvalidDataException e => $"格式錯誤：{e.Message}",
+                IOException e => $"讀取失敗：{e.Message}",
+                _ => $"發生未預期的錯誤：{ex.Message}",
             };
+            _dialogService.ShowMessage(message);
+            NewRecords = new ObservableCollection<TrainingJournalItem>();
+        }
 
+        /// <summary>專門匯入 JSON（檔案不存在顯示錯誤訊息）</summary>
+        private void LoadJsonFile(string filePath)
+        {
             try
             {
-                // 檔案不存在
-                if (!File.Exists(filePath))
-                {
-                    _dialogService.ShowMessage("檔案不存在!!!");
-                    return new ObservableCollection<TrainingJournalItem>();
-                }
-
-                string json = File.ReadAllText(filePath);
-
-                var data = JsonSerializer.Deserialize<ObservableCollection<TrainingJournalItem>>(json, options);
-
-                if (data == null)
-                {
-                    _dialogService.ShowMessage("內容為空!!!");
-                    return new ObservableCollection<TrainingJournalItem>();
-                }
-
-                foreach (var item in data)
-                {
-                    if (item.Date == default)
-                    {
-                        throw new Exception("JSON Date格式錯誤");
-                    }
-
-                    if (item.Cardios.Count == 0 && item.Strengths.Count == 0)
-                    {
-                        throw new Exception("JSON 內容格式錯誤");
-                    }
-                }
-
-                return data;
-            }
-            catch (JsonException ex)
-            {
-                // JSON 格式錯誤
-                _dialogService.ShowMessage("JSON 格式不符");
-
-                return new ObservableCollection<TrainingJournalItem>();
+                NewRecords = ImportFromJson(filePath);
             }
             catch (Exception ex)
             {
-                // 其他錯誤
-                _dialogService.ShowMessage($"發生錯誤：\n{ex.Message}");
-
-                return new ObservableCollection<TrainingJournalItem>();
+                HandleImportException(ex);
             }
+        }
+
+        private ObservableCollection<TrainingJournalItem> ImportFromJson(string filePath)
+        {
+            // ====== 檔案存在檢查 ======
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"找不到檔案：{filePath}");
+            }
+
+            if (Path.GetExtension(filePath).ToLower() != ".json")
+            {
+                throw new ArgumentException($"檔案格式不正確，請提供 .json 檔案：{filePath}");
+            }
+
+            string json;
+            try
+            {
+                json = File.ReadAllText(filePath);
+            }
+            catch (Exception ex)
+            {
+                throw new IOException($"讀取 JSON 檔案時發生錯誤：{ex.Message}", ex);
+            }
+
+            // ====== 反序列化 ======
+            List<TrainingJournalItem>? data;
+            try
+            {
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = false,
+                    AllowTrailingCommas = false,
+                    ReadCommentHandling = JsonCommentHandling.Disallow,
+                    UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+                };
+                data = JsonSerializer.Deserialize<List<TrainingJournalItem>>(json, options);
+            }
+            catch (JsonException ex)
+            {
+                string location = (ex.LineNumber.HasValue && ex.BytePositionInLine.HasValue)
+                    ? $"（第 {ex.LineNumber.Value + 1} 行，第 {ex.BytePositionInLine.Value + 1} 字元）"
+                    : string.Empty;
+                throw new InvalidDataException($"JSON 結構無法解析{location}：{ex.Message}");
+            }
+
+            // ====== 頂層空值檢查 ======
+            if (data == null || data.Count == 0)
+            {
+                throw new InvalidDataException("JSON 內容為空或根節點不是陣列");
+            }
+
+            // ====== 逐筆驗證 ======
+            var seenDates = new HashSet<DateTime>();
+
+            for (int i = 0; i < data.Count; i++)
+            {
+                int itemNum = i + 1;
+                var item = data[i];
+
+                // Date
+                if (item.Date == default)
+                {
+                    throw new InvalidDataException($"第 {itemNum} 筆的 'Date' 格式錯誤或缺少");
+                }
+
+                if (!seenDates.Add(item.Date))
+                {
+                    throw new InvalidDataException($"第 {itemNum} 筆包含重複日期：{item.Date:yyyy-MM-dd}");
+                }
+
+                // 至少要有一種訓練
+                if ((item.Cardios == null || item.Cardios.Count == 0) &&
+                    (item.Strengths == null || item.Strengths.Count == 0))
+                {
+                    throw new InvalidDataException($"第 {itemNum} 筆（{item.Date:yyyy-MM-dd}）的 Cardios 與 Strengths 不可同時為空");
+                }
+
+                // Cardio 逐項檢查
+                for (int c = 0; c < (item.Cardios?.Count ?? 0); c++)
+                {
+                    var cardio = item.Cardios![c];
+                    string loc = $"第 {itemNum} 筆（{item.Date:yyyy-MM-dd}）Cardios[{c}]";
+
+                    if (string.IsNullOrWhiteSpace(cardio.Name))
+                    {
+                        throw new InvalidDataException($"{loc} 的 'Name' 不可為空白");
+                    }
+
+                    if (cardio.DistanceKm < 0)
+                    {
+                        throw new InvalidDataException($"{loc} 的 'DistanceKm' 不可為負數：{cardio.DistanceKm}");
+                    }
+
+                    if (cardio.Times <= 0)
+                    {
+                        throw new InvalidDataException($"{loc} 的 'Times' 必須大於 0：{cardio.Times}");
+                    }
+
+                    if (cardio.DurationMin <= 0)
+                    {
+                        throw new InvalidDataException($"{loc} 的 'DurationMin' 必須大於 0：{cardio.DurationMin}");
+                    }
+                }
+
+                // Strength 逐項檢查
+                for (int s = 0; s < (item.Strengths?.Count ?? 0); s++)
+                {
+                    var strength = item.Strengths![s];
+                    string loc = $"第 {itemNum} 筆（{item.Date:yyyy-MM-dd}）Strengths[{s}]";
+
+                    if (string.IsNullOrWhiteSpace(strength.BodyPart))
+                    {
+                        throw new InvalidDataException($"{loc} 的 'BodyPart' 不可為空白");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(strength.Name))
+                    {
+                        throw new InvalidDataException($"{loc} 的 'Name' 不可為空白");
+                    }
+
+                    if (strength.WeightKg <= 0)
+                    {
+                        throw new InvalidDataException($"{loc} 的 'WeightKg' 必須大於 0：{strength.WeightKg}");
+                    }
+
+                    if (strength.Sets <= 0)
+                    {
+                        throw new InvalidDataException($"{loc} 的 'Sets' 必須大於 0：{strength.Sets}");
+                    }
+
+                    if (strength.Reps <= 0)
+                    {
+                        throw new InvalidDataException($"{loc} 的 'Reps' 必須大於 0：{strength.Reps}");
+                    }
+                }
+
+                // CardiosTotalDuration 直接修正
+                item.CardiosTotalDuration = item.Cardios?.Sum(c => c.DurationMin) ?? 0;
+            }
+
+            return new ObservableCollection<TrainingJournalItem>(data);
         }
 
         /// <summary>專門匯入Excel（檔案不存在顯示錯誤訊息)</summary>
@@ -262,29 +409,9 @@ namespace SportsRecorder.ViewModel
             {
                 NewRecords = ImportFromExcel(filePath);
             }
-            catch (FileNotFoundException ex)
+            catch (Exception ex)
             {
-                // 檔案不存在
-                _dialogService.ShowMessage($"{ex.Message}");
-                NewRecords = new ObservableCollection<TrainingJournalItem>();
-            }
-            catch (ArgumentException ex)
-            {
-                // 副檔名錯誤
-                _dialogService.ShowMessage($"{ex.Message}");
-                NewRecords = new ObservableCollection<TrainingJournalItem>();
-            }
-            catch (InvalidDataException ex)
-            {
-                // 內容格式不正確，含有精確的行列資訊
-                _dialogService.ShowMessage($"格式錯誤：{ex.Message}");
-                NewRecords = new ObservableCollection<TrainingJournalItem>();
-            }
-            catch (IOException ex)
-            {
-                // 其他讀檔錯誤（檔案被佔用、權限不足等）
-                _dialogService.ShowMessage($"讀取失敗：{ex.Message}");
-                NewRecords = new ObservableCollection<TrainingJournalItem>();
+                HandleImportException(ex);
             }
         }
 
@@ -292,10 +419,14 @@ namespace SportsRecorder.ViewModel
         {
             // ====== 檔案存在檢查 ======
             if (!File.Exists(filePath))
+            {
                 throw new FileNotFoundException($"找不到檔案：{filePath}");
+            }
 
             if (Path.GetExtension(filePath).ToLower() != ".xlsx")
+            {
                 throw new ArgumentException($"檔案格式不正確，請提供 .xlsx 檔案：{filePath}");
+            }
 
             try
             {

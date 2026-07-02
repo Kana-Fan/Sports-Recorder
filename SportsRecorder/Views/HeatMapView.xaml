@@ -71,5 +71,14 @@
                 </Border>
             </StackPanel>
         </ScrollViewer>
+
+        <!-- 空內容提示文字 -->
+        <Border Grid.Row="2"
+                Grid.RowSpan="3"
+                Style="{StaticResource BorderStyle}"
+                Visibility="{Binding IsDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock Text="還沒有資料喔~"
+                       Style="{StaticResource Hint}"/>
+        </Border>
     </Grid>
 </UserControl>

@@ -183,16 +183,15 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
-
-                <!-- 空內容提示文字 -->
-                <Border Grid.RowSpan="3"
-                        Grid.ColumnSpan="2"
-                        Style="{StaticResource BorderStyle}"
-                        Visibility="{Binding IsDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <TextBlock Text="目前無資料"
-                               Style="{StaticResource Hint}"/>
-                </Border>
             </Grid>
         </ScrollViewer>
+
+        <!-- 空內容提示文字(全部) -->
+        <Border Grid.Row="2"
+                Style="{StaticResource BorderStyle}"
+                Visibility="{Binding IsDataEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock Text="還沒有資料喔~"
+                       Style="{StaticResource Hint}"/>
+        </Border>
     </Grid>
 </UserControl>
