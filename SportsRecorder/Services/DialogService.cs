@@ -24,5 +24,18 @@ namespace SportsRecorder.Services
 
             return dialog.IsConfirmed;
         }
+
+        public string? Prompt(string message, string defaultValue = "", string title = "請輸入")
+        {
+            var dialog = new InputDialog(message, defaultValue, title)
+            {
+                Owner = Application.Current.MainWindow
+            };
+
+            bool? result = dialog.ShowDialog();
+
+            return result == true ? dialog.ResultText : null;
+        }
+
     }
 }

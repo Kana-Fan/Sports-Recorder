@@ -59,6 +59,7 @@ namespace SportsRecorder.ViewModel
                 _selectRecord = value;
                 OnPropertyChanged(nameof(SelectRecord));
                 OnPropertyChanged(nameof(IsDataEmpty));
+                OnPropertyChanged(nameof(IsTrainingStandards));
             }
         }
 
@@ -97,6 +98,14 @@ namespace SportsRecorder.ViewModel
             get
             {
                 return _lastCardioRecords.Count() == 0;
+            }
+        }
+
+        public bool IsTrainingStandards
+        {
+            get
+            {
+                return _lastCardioRecords.Count >= ((EndDate - StartDate).Days + 1) / 3 * 2;
             }
         }
 
@@ -171,7 +180,7 @@ namespace SportsRecorder.ViewModel
 
             _lastCardioRecords = cardioRecords;
 
-            TotalDay = $"{cardioRecords.Count} / {(EndDate - StartDate).Days} 天";
+            TotalDay = $"{cardioRecords.Count} / {(EndDate - StartDate).Days + 1} 天";
 
             // 區間內的資料（直方圖用：日期 + 各運動時間or 各運動距離)
             UpdateBarChart(cardioRecords);

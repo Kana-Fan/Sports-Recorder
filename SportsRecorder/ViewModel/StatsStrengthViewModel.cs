@@ -16,6 +16,9 @@ namespace SportsRecorder.ViewModel
 {
     internal class StatsStrengthViewModel : StatsViewModelBase
     {
+        private const string DefaultCoachImage = "/Assets/Images/coach.png";
+        private const string MuscleCoachImage = "/Assets/Images/coachMuscle.png";
+
         private static readonly SKColor[] DarkPalette =
         [
             new SKColor(0x4D, 0x72, 0xC8), // 靛藍
@@ -118,6 +121,17 @@ namespace SportsRecorder.ViewModel
             {
                 _lineChartTitle = value;
                 OnPropertyChanged(nameof(LineChartTitle));
+            }
+        }
+
+        private string _coachImagePath = DefaultCoachImage;
+        public string CoachImagePath
+        {
+            get => _coachImagePath;
+            set
+            {
+                _coachImagePath = value;
+                OnPropertyChanged(nameof(CoachImagePath));
             }
         }
 
@@ -263,7 +277,16 @@ namespace SportsRecorder.ViewModel
                 r.Strengths != null && r.Strengths.Count > 0)
                 .ToList();
 
-            TotalDay = $"{strengthRecords.Count} / {(EndDate - StartDate).Days} 天";
+            TotalDay = $"{strengthRecords.Count} / {(EndDate - StartDate).Days + 1} 天";
+
+            if (strengthRecords.Count >= ((EndDate - StartDate).Days + 1) / 3 * 2)
+            {
+                CoachImagePath = MuscleCoachImage;
+            }
+            else
+            {
+                CoachImagePath = DefaultCoachImage;
+            }
 
             var allBodyParts = strengthRecords
                .SelectMany(r => r.Strengths)
@@ -399,21 +422,17 @@ namespace SportsRecorder.ViewModel
                 .Distinct()
                 .ToList();
 
-            if (ExercisesLegendItems.Count != allExercises.Count ||
-                !ExercisesLegendItems.Select(l => l.Name).SequenceEqual(allExercises))
-            {
-                ExercisesLegendItems = new ObservableCollection<LegendItem>(
-                    allExercises.Select((name, i) => new LegendItem
-                    {
-                        Name = name,
-                        Color = "#" + analogousPalette[i % analogousPalette.Length].Red.ToString("X2")
-                                   + analogousPalette[i % analogousPalette.Length].Green.ToString("X2")
-                                   + analogousPalette[i % analogousPalette.Length].Blue.ToString("X2"),
-                        SvgPath = GeometrySvgPaths[i % GeometrySvgPaths.Length],
-                        IsVisible = _exercisesVisibleSeries.Contains(name)
-                    })
-                );
-            }
+            ExercisesLegendItems = new ObservableCollection<LegendItem>(
+                allExercises.Select((name, i) => new LegendItem
+                {
+                    Name = name,
+                    Color = "#" + analogousPalette[i % analogousPalette.Length].Red.ToString("X2")
+                               + analogousPalette[i % analogousPalette.Length].Green.ToString("X2")
+                               + analogousPalette[i % analogousPalette.Length].Blue.ToString("X2"),
+                    SvgPath = GeometrySvgPaths[i % GeometrySvgPaths.Length],
+                    IsVisible = _exercisesVisibleSeries.Contains(name)
+                })
+            );
         }
 
         private ISeries[] BuildWeightChangeSeries(IGrouping<string, (DateTime Date, Strength Strength)> bodyGroup, SKColor[] palette)
@@ -457,18 +476,22 @@ namespace SportsRecorder.ViewModel
             // 轉換到 HSV
             baseColor.ToHsv(out float h, out float s, out float v);
 
+            // 深色主題：淺色系（高明度、低飽和）；淺色主題：深色系（高飽和、較廣明度範圍）
+            var (vStart, vEnd, vMin, vMax, sStart, sEnd, sMin, sMax) = ThemeService.IsDark
+                ? (90f, 98f, 80f, 100f, 45f, 25f, 15f, 60f)
+                : (70f, 95f, 30f, 100f, 95f, 60f, 40f, 100f);
+
             return Enumerable.Range(0, count).Select(i =>
             {
                 float ratio = (float)i / Math.Max(count - 1, 1);
+                float tV = vStart + (vEnd - vStart) * ratio;
+                float tS = sStart + (sEnd - sStart) * ratio;
 
-                float tV = 70f + 25f * ratio;   // 70~95
-                float tS = 95f - 35f * ratio;   // 95~60
-
-                // 色相微偏移，讓每條線略有區分）
+                // 色相微偏移，讓每條線略有區分
                 float hShift = (i % 2 == 0 ? 1 : -1) * (i / 2) * 20f;
                 float newH = (h + hShift + 360f) % 360f;
 
-                return SKColor.FromHsv(newH, Math.Clamp(tS, 40f, 100f), Math.Clamp(tV, 30f, 100f));
+                return SKColor.FromHsv(newH, Math.Clamp(tS, sMin, sMax), Math.Clamp(tV, vMin, vMax));
             }).ToArray();
         }
 
@@ -509,6 +532,7 @@ namespace SportsRecorder.ViewModel
             LineXAxes = ChartTheme.BuildDateTimeXAxes(AxisColor, minDate: _startDate, maxDate: _endDate);
             LineYAxes = ChartTheme.BuildYAxes(LineYAxisLabeler, AxisColor);
             UpdateBarChart(_lastAllBodyParts);
+            UpdateLineChart(_lastStrengthRecords, NowBodyPart);
         }
     }
 }

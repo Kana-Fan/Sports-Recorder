@@ -37,10 +37,11 @@
                 <ColumnDefinition Width="20"/>
                 <ColumnDefinition Width="auto" />
                 <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="auto" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Rectangle Grid.Row="0" Grid.ColumnSpan="5" Style="{StaticResource TitleDividerLine}"/>
+            <Rectangle Grid.Row="0" Grid.ColumnSpan="6" Style="{StaticResource TitleDividerLine}"/>
 
             <TextBlock Grid.Row="1" Grid.Column="0" Text="起始日期" Style="{StaticResource Subheading}"/>
             <TextBlock Grid.Row="1" Grid.Column="2" Text="結束日期" Style="{StaticResource Subheading}"/>
@@ -82,7 +83,11 @@
 
             <TextBlock Grid.Row="2" Grid.Column="4" Style="{StaticResource Subheading}" Text="{Binding TotalDay}"/>
 
-            <Rectangle Grid.Row="3" Grid.ColumnSpan="5" Style="{StaticResource DividerLine}"/>
+            <Rectangle Grid.Row="3" Grid.ColumnSpan="6" Style="{StaticResource DividerLine}"/>
+
+            <Image Grid.Row="1" Grid.Column="5" Grid.RowSpan="2"
+                   Width="50" Height="100" HorizontalAlignment="Left"
+                   Source="{Binding CoachImagePath}"/>
         </Grid>
 
         <ScrollViewer x:Name="scroll_viewer" Grid.Row="2" VerticalScrollBarVisibility="Auto">

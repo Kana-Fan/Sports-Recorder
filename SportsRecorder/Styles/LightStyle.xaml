@@ -43,4 +43,5 @@
     <BitmapImage x:Key="Refresh" UriSource="/Assets/Icons/LightMode/refresh.png"/>
     <BitmapImage x:Key="Date" UriSource="/Assets/Icons/LightMode/date.png"/>
     <BitmapImage x:Key="Chart"  UriSource="/Assets/Icons/LightMode/chart.png"/>
+    <BitmapImage x:Key="Template"  UriSource="/Assets/Icons/LightMode/article.png"/>
 </ResourceDictionary>

@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 
@@ -12,37 +13,47 @@ namespace SportsRecorder
         public SplashScreenWindow()
         {
             InitializeComponent();
-            TextAnimation();
+            PlayPerCharAnimation(_text);
         }
 
-        private void TextAnimation()
+        private void PlayPerCharAnimation(
+            TextBlock target,
+            double amplitude = -15,
+            double charDuration = 0.5,
+            double staggerMs = 100,
+            double totalRepeatSeconds = 10,
+            double accelRatio = 0.2,
+            double decelRatio = 0.2)
         {
             Storyboard perChar = new Storyboard();
-            perChar.RepeatBehavior = new RepeatBehavior(TimeSpan.FromSeconds(10));
+            perChar.RepeatBehavior = new RepeatBehavior(TimeSpan.FromSeconds(totalRepeatSeconds));
 
-            _text.TextEffects = new TextEffectCollection();
+            target.TextEffects = new TextEffectCollection();
 
-            for (int i = 0; i < _text.Text.Length; i++)
+            for (int i = 0; i < target.Text.Length; i++)
             {
-                TextEffect effect = new TextEffect();
-                effect.Transform = new TranslateTransform();
-                effect.PositionStart = i;
-                effect.PositionCount = 1;
-                _text.TextEffects.Add(effect);
+                TextEffect effect = new TextEffect
+                {
+                    Transform = new TranslateTransform(),
+                    PositionStart = i,
+                    PositionCount = 1
+                };
+                target.TextEffects.Add(effect);
 
-                DoubleAnimation anim = new DoubleAnimation();
-                anim.From = 0;
-                anim.To = -15;
-                anim.AutoReverse = true;
-                anim.AccelerationRatio = .2;
-                anim.DecelerationRatio = .2;
-                anim.RepeatBehavior = new RepeatBehavior(1);
-                anim.Duration = TimeSpan.FromSeconds(0.5);
-                anim.BeginTime = TimeSpan.FromMilliseconds(100 * i); // 打字節奏,字與字間隔小
+                DoubleAnimation anim = new DoubleAnimation
+                {
+                    From = 0,
+                    To = amplitude,
+                    AutoReverse = true,
+                    AccelerationRatio = accelRatio,
+                    DecelerationRatio = decelRatio,
+                    RepeatBehavior = new RepeatBehavior(1),
+                    Duration = TimeSpan.FromSeconds(charDuration),
+                    BeginTime = TimeSpan.FromMilliseconds(staggerMs * i)
+                };
 
-                Storyboard.SetTargetProperty(anim, new PropertyPath("TextEffects[" + i + "].Transform.Y"));
-                Storyboard.SetTargetName(anim, _text.Name);
-
+                Storyboard.SetTargetProperty(anim, new PropertyPath($"TextEffects[{i}].Transform.Y"));
+                Storyboard.SetTargetName(anim, target.Name);
                 perChar.Children.Add(anim);
             }
 

@@ -252,6 +252,20 @@
         <!-- 底部按鈕列 -->
         <Grid  Grid.Row="6" Margin="10">
             <Button Content="儲存" Command="{Binding SaveCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <ComboBox x:Name="TemplatePicker"
+                          Width="100" Height="25" Margin="5"
+                          ItemsSource="{Binding FilteredTemplates}"
+                          SelectedValuePath="."
+                          Style="{StaticResource DarkComboBoxStyleBase}"/>
+                <Button Content="套用範本"
+                        Command="{Binding ApplyTemplateCommand}"
+                        CommandParameter="{Binding SelectedItem, ElementName=TemplatePicker}"
+                        Style="{StaticResource StackPanelButton}"/>
+                <Button Content="另存為範本"
+                        Command="{Binding SaveAsTemplateCommand}"
+                        Style="{StaticResource StackPanelButton}"/>
+            </StackPanel>
             <Button Content="+" Command="{Binding AddEntryCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right"/>
         </Grid>
     </Grid>

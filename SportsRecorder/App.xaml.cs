@@ -21,7 +21,7 @@ namespace SportsRecorder
             MainWindow mainWindow = new MainWindow();
 
             // 3. 模擬應用程式啟動延遲 (可選，例如載入資料)
-            Task.Delay(TimeSpan.FromSeconds(5)).ContinueWith(t =>
+            Task.Delay(TimeSpan.FromSeconds(4)).ContinueWith(t =>
             {
                 // 確保 UI 更新在主執行緒上執行
                 Dispatcher.Invoke(() =>

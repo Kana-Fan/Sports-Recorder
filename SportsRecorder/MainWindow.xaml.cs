@@ -28,6 +28,8 @@ namespace SportsRecorder
         private int _syncingDepth = 0;
         private bool IsSyncing => _syncingDepth > 0;
 
+        private bool _isNavAnimating = false;   // 動畫進行中旗標
+
         private const double NavExpandedWidth = 150;
         private MainViewModel Vm => DataContext as MainViewModel;
 
@@ -89,7 +91,7 @@ namespace SportsRecorder
 
         private void ToggleNavButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Vm == null)
+            if (Vm == null || _isNavAnimating)
             {
                 return;
             }
@@ -99,6 +101,12 @@ namespace SportsRecorder
 
         private void ExpandAnimation(Action onCompleted = null)
         {
+            if (_isNavAnimating)
+            {
+                return;
+            }
+
+            _isNavAnimating = true;
             bool expanding = Vm.IsNavCollapsed; // 即將展開
 
             // 收起時 TreeView 可能自動觸發 SelectedItemChanged，先封鎖
@@ -119,6 +127,7 @@ namespace SportsRecorder
             anim.Completed += (_, _) =>
             {
                 _syncingDepth--;
+                _isNavAnimating = false;
                 if (expanding)
                 {
                     SyncSelection(_selectedNavItem);
@@ -152,12 +161,18 @@ namespace SportsRecorder
             // 收起狀態點了有子節點的父節點 → 展開側欄
             if (Vm.IsNavCollapsed && parent == null && item.Children?.Count > 0)
             {
-                _selectedNavItem = item;
+                if (_isNavAnimating)
+                {
+                    return; // 動畫進行中，忽略這次選取觸發的展開
+                }
+
+                _selectedNavItem = item.Children[0];
                 ExpandAnimation(onCompleted: () =>
                 {
                     Vm.IsNavCollapsed = !Vm.IsNavCollapsed;
                 });
 
+                Vm.NavigateCommand.Execute(_selectedNavItem.Key);
                 return;
             }
 

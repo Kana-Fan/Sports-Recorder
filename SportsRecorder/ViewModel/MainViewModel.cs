@@ -39,6 +39,7 @@ namespace SportsRecorder.ViewModel
             new() { Title = "訓練日誌", Key = "journal", IconKey = "Journal"},
             new() { Title = "運動類型", Key = "exercise", IconKey = "Exercise", Children = new()
             {
+                new() { Title = "模板", Key = "template", IconKey = "Template" },
                 new() { Title = "有氧", Key = "cardio", IconKey = "Cardio" },
                 new() { Title = "重訓", Key = "strength", IconKey = "Strength" },
             }},
@@ -82,9 +83,9 @@ namespace SportsRecorder.ViewModel
                 "stats-strength" => new StatsStrengthViewModel(),
                 "data" => new DataManagementViewModel(),
                 "chart" => new HeatMapViewModel(),
+                "template" => new WorkoutTemplateViewModel(),
                 _ => CurrentPage
             };
-
         }
 
         public bool CheckHasChanged()

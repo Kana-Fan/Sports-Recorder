@@ -1,8 +1,7 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using SportsRecorder.Model;
 using SportsRecorder.Services;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Text.Json;
 using System.Windows.Input;
 
@@ -10,32 +9,6 @@ namespace SportsRecorder.ViewModel
 {
     internal class TrainingJournalViewModel : TrainingRecordsViewModel
     {
-        // 部位與運動的對應字典
-        public Dictionary<string, List<string>> StrengthTypes { get; set; }
-
-        // 暴露給 ComboBox 用的選項清單
-        public ObservableCollection<ExerciseTypeOption> ExerciseTypeOptions { get; } = new ObservableCollection<ExerciseTypeOption>
-        {
-            new ExerciseTypeOption("有氧運動", ExerciseType.Cardio,   "#FF43A047"),
-            new ExerciseTypeOption("重量訓練", ExerciseType.Strength, "#EF5350"),
-        };
-
-        // 有氧運動的類型
-        private List<String> _cardioTypes;
-        public List<String> CardioTypes
-        {
-            get => _cardioTypes;
-            set => SetProperty(ref _cardioTypes, value);
-        }
-
-        // 重訓的部位類型
-        private List<String> _bodyTypes;
-        public List<String> BodyTypes
-        {
-            get => _bodyTypes;
-            set => SetProperty(ref _bodyTypes, value);
-        }
-
         // 當前選擇日期
         private DateTime _selectedDate = DateTime.Today;
         public DateTime SelectedDate
@@ -91,29 +64,21 @@ namespace SportsRecorder.ViewModel
                 SetProperty(ref _selectedType, value);
                 OnPropertyChanged(nameof(IsCardio));
                 OnPropertyChanged(nameof(IsStrength));
+                OnPropertyChanged(nameof(IsDataEmpty));
 
                 AddPropertyChanged();
             }
         }
 
-        public bool IsCardio => SelectedType == ExerciseType.Cardio;
-        public bool IsStrength => SelectedType == ExerciseType.Strength;
+        protected override ExerciseType? CurrentType => SelectedType;
+        protected override ObservableCollection<Cardio>? CurrentCardios => CurrentLog?.Cardios;
+        protected override ObservableCollection<Strength>? CurrentStrengths => CurrentLog?.Strengths;
 
         private int _cardiosTotalDuration = 0;
         public int CardiosTotalDuration
         {
             get => _cardiosTotalDuration;
             set => SetProperty(ref _cardiosTotalDuration, value);
-        }
-
-        // 判斷集合是否為空或數量為 0
-        public bool IsDataEmpty
-        {
-            get
-            {
-                return SelectedType == ExerciseType.Cardio ?
-                    CurrentLog.Cardios.Count() == 0 : CurrentLog.Strengths.Count() == 0;
-            }
         }
 
         public bool IsToday
@@ -124,20 +89,22 @@ namespace SportsRecorder.ViewModel
             }
         }
 
+        // 只顯示符合目前 SelectedType 的範本
+        public IEnumerable<WorkoutTemplate> FilteredTemplates =>
+            Templates?.Where(t => t.Type == SelectedType) ?? Enumerable.Empty<WorkoutTemplate>();
+        private static T DeepClone<T>(T obj) =>
+            JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(obj))!;
+
         // Commands
         public ICommand AddEntryCommand { get; }
         public ICommand DeleteEntryCommand { get; }
         public ICommand SaveCommand { get; }
         public ICommand Refresh { get; }
+        public ICommand ApplyTemplateCommand { get; }
+        public ICommand SaveAsTemplateCommand { get; }
 
         public TrainingJournalViewModel()
         {
-            CardioTypes = GetCardioTypes();
-
-            StrengthTypes = GetStrengthTypes();
-
-            BodyTypes = StrengthTypes.Keys.ToList();
-
             LoadOrCreateLog(DateTime.Today);
 
             RefreshHasRecord();
@@ -145,7 +112,7 @@ namespace SportsRecorder.ViewModel
             // 初始化時，為現有的所有項目訂閱事件
             foreach (var item in Records)
             {
-                item.PropertyChanged += Item_PropertyChanged;
+                item.PropertyChanged += (s, e) => UpdateDirtyState();
             }
 
             // 監聽集合的變化（新增、刪除、排序）
@@ -197,6 +164,69 @@ namespace SportsRecorder.ViewModel
             SaveCommand = new RelayCommand(execute: ExecuteSave, canExecute: () => HasChange);
 
             Refresh = new RelayCommand(execute: ExecuteRefresh, canExecute: CanExecuteRefresh);
+
+            ApplyTemplateCommand = new RelayCommand<WorkoutTemplate>(template =>
+            {
+                if (template == null)
+                {
+                    return;
+                }
+
+                if (template.Type == ExerciseType.Cardio)
+                {
+                    foreach (var c in template.Cardios)
+                    {
+                        CurrentLog.Cardios.Add(DeepClone(c));
+                    }
+
+                    RecalculateTotalDuration();
+                }
+                else
+                {
+                    foreach (var s in template.Strengths)
+                    {
+                        CurrentLog.Strengths.Add(DeepClone(s));
+                    }
+                }
+
+                AddPropertyChanged();   // 重新訂閱新加入項目的 PropertyChanged
+                UpdateDirtyState();
+                OnPropertyChanged(nameof(IsDataEmpty));
+            });
+
+            SaveAsTemplateCommand = new RelayCommand(() =>
+            {
+                var name = _dialogService.Prompt("請輸入範本名稱：");
+                if (string.IsNullOrWhiteSpace(name))
+                {
+                    return;
+                }
+
+                name = name.Trim();
+
+                // 檢查是否有重複名字
+                if (IsNameDuplicated(name, SelectedType))
+                {
+                    return;
+                }
+
+                var template = new WorkoutTemplate
+                {
+                    Name = name,
+                    Type = SelectedType,
+                    Cardios = SelectedType == ExerciseType.Cardio
+                        ? new ObservableCollection<Cardio>(CurrentLog.Cardios.Select(DeepClone))
+                        : new(),
+                    Strengths = SelectedType == ExerciseType.Strength
+                        ? new ObservableCollection<Strength>(CurrentLog.Strengths.Select(DeepClone))
+                        : new(),
+                };
+
+                Templates.Add(template);
+                JsonStorageService.Save(Templates, TemplatesFileName);
+                OnPropertyChanged(nameof(FilteredTemplates));
+                _dialogService.ShowMessage("範本已儲存！");
+            });
         }
 
         private bool CanExecuteRefresh() => !IsToday;
@@ -213,40 +243,13 @@ namespace SportsRecorder.ViewModel
 
         private void ExecuteSave()
         {
-            // 檢查記錄內的空項目
-            foreach (var record in Records)
+            // 只檢查當天資料 (CurrentLog) 內的空項目
+            if (!RemoveEmptyEntries(SelectedType, CurrentLog.Cardios, CurrentLog.Strengths))
             {
-                if (SelectedType == ExerciseType.Cardio)
-                {
-                    var emptyCardios = record.Cardios?
-                    .Where(c => c.Name == "-選擇運動名稱-").ToList() ?? [];
-                    if (emptyCardios.Count() != 0 && !_dialogService.Confirm("有氧運動有未填寫完的項目，確定要儲存(自動刪除未填寫完的)嗎?"))
-                    {
-                        return;
-                    }
-
-                    foreach (var c in emptyCardios)
-                    {
-                        record.Cardios.Remove(c);
-                    }
-                }
-                else // Strengths
-                {
-                    var emptyStrengths = record.Strengths?
-                        .Where(s => s.BodyPart == "-選擇部位-" || s.Name == "-選擇訓練名稱-").ToList() ?? [];
-                    if (emptyStrengths.Count() != 0 && !_dialogService.Confirm("重量訓練有未填寫完的項目，確定要儲存(自動刪除未填寫完的)嗎?"))
-                    {
-                        return;
-                    }
-
-                    foreach (var s in emptyStrengths)
-                    {
-                        record.Strengths.Remove(s);
-                    }
-                }
+                return;
             }
 
-            // 排序與刪除空行
+            // 排序與刪除空行 資料大時很耗時
             var sorted = Records
                 .Where(x => (x.Cardios != null && x.Cardios.Count > 0) || (x.Strengths != null && x.Strengths.Count > 0))
                 .OrderBy(x => x.Date)
@@ -258,20 +261,13 @@ namespace SportsRecorder.ViewModel
                 Records.Add(r);
             }
 
-            // CurrentLog 可能已被清掉，重新載入
-            LoadOrCreateLog(SelectedDate);
-
-            if (JsonStorageService.Save(Records, RecordsFileName))
+            if (SaveAndNotify(Records, RecordsFileName))
             {
                 OnPropertyChanged(nameof(IsDataEmpty));
-                _dialogService.ShowMessage("儲存成功並刪除未填寫完的運動！");
-                HasChange = false;
             }
 
-            else
-            {
-                _dialogService.ShowMessage("儲存失敗！！！");
-            }
+            // CurrentLog 可能已被清掉，重新載入
+            LoadOrCreateLog(SelectedDate);
         }
 
         private void LoadOrCreateLog(DateTime date)
@@ -295,23 +291,7 @@ namespace SportsRecorder.ViewModel
         // 增加訂閱
         private void AddPropertyChanged()
         {
-            if (SelectedType == ExerciseType.Cardio)
-            {
-                foreach (var item in CurrentLog.Cardios)
-                {
-                    item.PropertyChanged -= Item_PropertyChanged;
-                    item.PropertyChanged += Item_PropertyChanged;
-                }
-            }
-
-            else
-            {
-                foreach (var item in CurrentLog.Strengths)
-                {
-                    item.PropertyChanged -= Item_PropertyChanged;
-                    item.PropertyChanged += Item_PropertyChanged;
-                }
-            }
+            SubscribeItemsChanged(SelectedType == ExerciseType.Cardio ? CurrentLog.Cardios : CurrentLog.Strengths);
         }
 
         // 計算總時間
@@ -326,66 +306,12 @@ namespace SportsRecorder.ViewModel
             CardiosTotalDuration = CurrentLog.CardiosTotalDuration;
         }
 
-        // 讀取有氧運動的類型
-        private static List<String> GetCardioTypes()
+        protected override void UpdateDirtyState()
         {
-            var loadedItems = JsonStorageService.Load<ObservableCollection<CardioItem>>("CardioTypes.json");
-
-            List<string> types = loadedItems.Select(x => x.Name).ToList();
-
-            return types;
-        }
-
-        // 讀取重量訓練的類型
-        private static Dictionary<string, List<string>> GetStrengthTypes()
-        {
-            var loadedItems = JsonStorageService.Load<ObservableCollection<StrengthItem>>("StrengthTypes.json");
-
-            var exerciseMap = loadedItems
-                .GroupBy(e => e.BodyPart)
-                .ToDictionary(
-                    g => g.Key,
-                    g => g.Select(e => e.Name).ToList()
-                );
-
-            return exerciseMap;
-        }
-
-        // 當任何一個 TrainingJournalItem 的數值改變時，都會觸發這裡
-        private void Item_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            // 任何欄位改變，就執行 JSON 比對
-            UpdateDirtyState();
-        }
-
-        private void UpdateDirtyState()
-        {
-            ObservableCollection<TrainingJournalItem> oldCardioTypes = JsonStorageService.Load<ObservableCollection<TrainingJournalItem>>(RecordsFileName);
-
-            string currentJson = JsonSerializer.Serialize(Records);
-            string oldJson = JsonSerializer.Serialize(oldCardioTypes);
+            CompareAndSetDirty(Records, RecordsFileName);
 
             RecalculateTotalDuration();
             RefreshHasRecord();
-
-            // 更新狀態，這會觸發 UI 按鈕的啟用/停用
-            HasChange = currentJson != oldJson;
         }
-    }
-
-    public class ExerciseTypeOption
-    {
-        public string DisplayName { get; }
-        public ExerciseType Value { get; }
-        public string DotColor { get; }
-
-        public ExerciseTypeOption(string displayName, ExerciseType value, string dotColor)
-        {
-            DisplayName = displayName;
-            Value = value;
-            DotColor = dotColor;
-        }
-
-        public override string ToString() => DisplayName;
     }
 }

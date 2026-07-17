@@ -49,7 +49,7 @@ namespace SportsRecorder.ViewModel
         }
 
         // --- Date range ---
-        protected DateTime _startDate = DateTime.Today.AddDays(-7);
+        protected DateTime _startDate = DateTime.Today.AddDays(-6);
         public DateTime StartDate
         {
             get => _startDate;
@@ -57,9 +57,9 @@ namespace SportsRecorder.ViewModel
             {
                 SetProperty(ref _startDate, value);
 
-                if ((EndDate - StartDate).Days < 7)
+                if ((EndDate - StartDate).Days < 6)
                 {
-                    _endDate = StartDate.AddDays(7);
+                    _endDate = StartDate.AddDays(6);
                     OnPropertyChanged(nameof(EndDate));
                     _dialogService.ShowMessage("~已自動調整為最小 7 天區間~");
                 }
@@ -67,7 +67,7 @@ namespace SportsRecorder.ViewModel
                 {
                     _endDate = StartDate.AddDays(30);
                     OnPropertyChanged(nameof(EndDate));
-                    _dialogService.ShowMessage("~已自動調整為最大 30 天區間~");
+                    _dialogService.ShowMessage("~已自動調整為最大 31 天區間~");
                 }
 
                 OnDateRangeChanged();
@@ -82,9 +82,9 @@ namespace SportsRecorder.ViewModel
             {
                 SetProperty(ref _endDate, value);
 
-                if ((EndDate - StartDate).Days < 7)
+                if ((EndDate - StartDate).Days < 6)
                 {
-                    _startDate = EndDate.AddDays(-7);
+                    _startDate = EndDate.AddDays(-6);
                     OnPropertyChanged(nameof(StartDate));
                     _dialogService.ShowMessage("~已自動調整為最小 7 天區間~");
                 }
@@ -92,7 +92,7 @@ namespace SportsRecorder.ViewModel
                 {
                     _startDate = EndDate.AddDays(-30);
                     OnPropertyChanged(nameof(StartDate));
-                    _dialogService.ShowMessage("~已自動調整為最大 30 天區間~");
+                    _dialogService.ShowMessage("~已自動調整為最大 31 天區間~");
                 }
 
                 OnDateRangeChanged();
@@ -103,7 +103,7 @@ namespace SportsRecorder.ViewModel
         {
             get
             {
-                return EndDate == DateTime.Today && StartDate == DateTime.Today.AddDays(-7);
+                return EndDate == DateTime.Today && StartDate == DateTime.Today.AddDays(-6);
             }
         }
 
@@ -121,7 +121,7 @@ namespace SportsRecorder.ViewModel
 
         private void ExecuteRefresh()
         {
-            _startDate = DateTime.Today.AddDays(-7);
+            _startDate = DateTime.Today.AddDays(-6);
             _endDate = DateTime.Today;
             OnPropertyChanged(nameof(StartDate));
             OnPropertyChanged(nameof(EndDate));

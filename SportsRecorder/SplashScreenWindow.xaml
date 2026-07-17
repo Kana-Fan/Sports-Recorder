@@ -11,7 +11,7 @@
         ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         AllowsTransparency="True"
-        Background="{DynamicResource BackgroundColor}"
+        Background="Transparent"
         Icon="{DynamicResource Strength}">
     <Border Background="{DynamicResource BackgroundColor}"
             CornerRadius="12"
@@ -46,7 +46,7 @@
                           Source="Assets/Videos/Training.mp4"
                           LoadedBehavior="Play"
                           UnloadedBehavior="Close"
-                          Stretch="Uniform" />
+                          Stretch="Uniform" Margin="5" />
         </Grid>
     </Border>
 </Window>

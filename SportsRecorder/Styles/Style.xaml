@@ -259,6 +259,12 @@
         </Setter>
     </Style>
 
+    <Style x:Key="TextBoxStyle" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource  LINESeedTW_TTF_Rg}"/>
+        <Setter Property="Foreground" Value="{DynamicResource HintTextColor}" />
+        <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
+    </Style>
+
     <!-- 日期選擇 -->
     <Style x:Key="CustomDatePicker" TargetType="DatePicker">
         <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
@@ -409,14 +415,14 @@
         <Setter Property="Background" Value="{DynamicResource RowBackgroundColor}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
         <Style.Triggers>
-            <!-- 滑鼠移過時的背景色 -->
-            <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{DynamicResource MouseOverBackgroundColor}"/>
-            </Trigger>
             <!-- 當列被選取時的變化 -->
             <Trigger Property="IsSelected" Value="True">
                 <Setter Property="Background" Value="{DynamicResource SelectedBackgroundColor}" />
                 <Setter Property="FontWeight" Value="Bold" />
+            </Trigger>
+            <!-- 滑鼠移過時的背景色 -->
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource MouseOverBackgroundColor}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
@@ -437,8 +443,8 @@
                     <Border x:Name="border"
                             Background="{TemplateBinding Background}"
                             CornerRadius="8"
-                            BorderBrush="Gray"
-                            BorderThickness="1">
+                            BorderBrush="{DynamicResource TextColor}"
+                            BorderThickness="1.5">
                         <ContentPresenter
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"/>
@@ -469,6 +475,10 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+
+    <Style x:Key="StackPanelButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="Margin" Value="5" />
     </Style>
 
     <Style x:Key="MenuButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
@@ -525,7 +535,7 @@
     <Style x:Key="DarkComboBoxStyleBase" TargetType="ComboBox">
         <Setter Property="Background" Value="{DynamicResource BackgroundColor}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextColor}"/>
-        <Setter Property="BorderBrush" Value="#FF7A7C8C"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource TextColor}"/>
         <Setter Property="FontFamily" Value="{StaticResource LINESeedTW_TTF_Rg}"/>
         <Setter Property="BorderThickness" Value="2"/>
         <Setter Property="Padding" Value="6,4"/>
@@ -563,7 +573,7 @@
                                             <Path
                                                 Grid.Column="1"
                                                 Data="M 0 0 L 4 4 L 8 0"
-                                                Stroke="#A1A7CC"
+                                                Stroke="{DynamicResource TextColor}"
                                                 StrokeThickness="1.5"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center"/>
@@ -587,7 +597,7 @@
                             Focusable="False">
                             <Border
                                 Background="{DynamicResource BackgroundColor}"
-                                BorderBrush="#3A3F5C"
+                                BorderBrush="{DynamicResource TextColor}"
                                 BorderThickness="1"
                                 CornerRadius="4"
                                 MinWidth="{TemplateBinding ActualWidth}">

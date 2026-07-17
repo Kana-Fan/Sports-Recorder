@@ -639,7 +639,7 @@ namespace SportsRecorder.ViewModel
 
                 // Header
                 string[] cardioHeaders = ["日期", "運動名稱", "運動距離(km)", "運動次數", "運動時間(min)"];
-                SetHeaders(cardioSheet, cardioHeaders, "#4472C4");
+                SetHeaders(cardioSheet, cardioHeaders, "#FF43A047");
 
                 int cardioRow = 2;
                 foreach (var record in records)
@@ -661,7 +661,7 @@ namespace SportsRecorder.ViewModel
                 var strengthSheet = wb.Worksheets.Add("Strength");
 
                 string[] strengthHeaders = ["日期", "訓練部位", "訓練名稱", "重量(kg)", "訓練組數", "訓練次數"];
-                SetHeaders(strengthSheet, strengthHeaders, "#70AD47");
+                SetHeaders(strengthSheet, strengthHeaders, "#EF5350");
 
                 int strengthRow = 2;
                 foreach (var record in records)

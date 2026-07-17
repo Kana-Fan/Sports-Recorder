@@ -31,6 +31,27 @@ namespace SportsRecorder.Model
         }
     }
 
+    public class WorkoutTemplate : BaseModel
+    {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
+
+        private string _name = string.Empty;
+        public string Name
+        {
+            get => _name;
+            set
+            {
+                _name = value;
+                OnPropertyChanged(nameof(Name));
+            }
+        }
+        public ExerciseType Type { get; set; }
+
+        public ObservableCollection<Cardio> Cardios { get; set; } = new();
+        public ObservableCollection<Strength> Strengths { get; set; } = new();
+        public override string ToString() => Name;
+    }
+
     public enum ExerciseType
     {
         Cardio,

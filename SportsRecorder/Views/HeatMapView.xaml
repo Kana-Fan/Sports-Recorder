@@ -50,7 +50,11 @@
                         YAxes="{Binding YAxes}"
                         Height="300"
                         TooltipPosition="Top"
-                        LegendPosition="Hidden"/>
+                        LegendPosition="Bottom">
+                        <lvc:CartesianChart.Legend>
+                            <draw:SKHeatLegend BadgePadding="30, 20, 8, 20"/>
+                        </lvc:CartesianChart.Legend>
+                    </lvc:CartesianChart>
                 </Border>
 
                 <Rectangle Style="{StaticResource DividerLine}"/>
@@ -67,7 +71,11 @@
                             YAxes="{Binding YAxes}"
                             Height="300"
                             TooltipPosition="Top"
-                            LegendPosition="Hidden"/>
+                            LegendPosition="Bottom">
+                        <lvc:CartesianChart.Legend>
+                            <draw:SKHeatLegend BadgePadding="30, 20, 8, 20"/>
+                        </lvc:CartesianChart.Legend>
+                    </lvc:CartesianChart>
                 </Border>
             </StackPanel>
         </ScrollViewer>
